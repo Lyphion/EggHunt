@@ -22,7 +22,10 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
 
     public EggHuntCommand() {
         this.subCommands = new TreeMap<>(Map.of(
-                "help", new EggHuntHelpCommand(this)
+                "find", new EggHuntFindCommand(),
+                "help", new EggHuntHelpCommand(this),
+                "model", new EggHuntModelCommand(),
+                "spawn", new EggHuntSpawnCommand()
         ));
     }
 

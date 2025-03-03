@@ -25,6 +25,7 @@ public final class EggHunt extends JavaPlugin {
     public void onEnable() {
         registerLanguages();
         registerCommands();
+        registerListeners();
 
         getLogger().info("Plugin activated");
     }
@@ -50,8 +51,11 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerCommands() {
-        new EggHuntCommand()
-                .register(Objects.requireNonNull(getCommand("egghunt")));
+        new EggHuntCommand().register(Objects.requireNonNull(getCommand("egghunt")));
+    }
+
+    private void registerListeners() {
+
     }
 
     public static @NotNull Logger getPluginLogger() {
