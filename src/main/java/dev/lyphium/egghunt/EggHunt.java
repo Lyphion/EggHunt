@@ -31,8 +31,11 @@ public final class EggHunt extends JavaPlugin {
     @Override
     public void onEnable() {
         resourceManager = new ResourceManager();
-        eggManager = new EggManager(resourceManager);
+        eggManager = new EggManager(this, resourceManager);
         statisticManager = new StatisticManager();
+
+        resourceManager.loadResources();
+        statisticManager.loadStatistics();
 
         registerLanguages();
         registerCommands();
@@ -43,6 +46,10 @@ public final class EggHunt extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        resourceManager.saveResources();
+        statisticManager.saveStatistics();
+        eggManager.removeAll();
+
         getLogger().info("Plugin deactivated");
     }
 

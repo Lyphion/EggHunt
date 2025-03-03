@@ -5,7 +5,7 @@ api-version: '1.21'
 prefix: EggHunt
 load: POSTWORLD
 author: Lyphion
-description: Simple easter egg hunt plugin
+description: Simple Easter egg hunt plugin
 
 permissions:
   egghunt.admin:
@@ -14,5 +14,5 @@ permissions:
 
 commands:
   egghunt:
-    description: Manage plugin
+    description: Central command for egg hunt
     usage: egghunt help

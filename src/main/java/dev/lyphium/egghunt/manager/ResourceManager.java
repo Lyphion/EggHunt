@@ -21,6 +21,8 @@ public final class ResourceManager {
 
     private Sound spawnSound, pickupSound, vanishSound;
 
+    private double range;
+
     public void loadResources() {
 
     }
