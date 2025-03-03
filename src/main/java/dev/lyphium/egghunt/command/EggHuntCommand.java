@@ -1,5 +1,8 @@
 package dev.lyphium.egghunt.command;
 
+import dev.lyphium.egghunt.manager.ResourceManager;
+import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
@@ -20,14 +23,18 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
     @Getter(AccessLevel.PACKAGE)
     private final Map<String, SubCommand> subCommands;
 
-    public EggHuntCommand() {
+    public EggHuntCommand(
+            @NotNull ResourceManager resourceManager,
+            @NotNull EggManager eggManager,
+            @NotNull StatisticManager statisticManager
+    ) {
         this.subCommands = new TreeMap<>(Map.of(
-                "drops", new EggHuntDropsCommand(),
-                "find", new EggHuntFindCommand(),
+                "drops", new EggHuntDropsCommand(resourceManager),
+                "find", new EggHuntFindCommand(eggManager),
                 "help", new EggHuntHelpCommand(this),
-                "leaderboard", new EggHuntLeaderboardCommand(),
-                "model", new EggHuntModelCommand(),
-                "spawn", new EggHuntSpawnCommand()
+                "leaderboard", new EggHuntLeaderboardCommand(statisticManager),
+                "model", new EggHuntModelCommand(resourceManager),
+                "spawn", new EggHuntSpawnCommand(eggManager)
         ));
     }
 

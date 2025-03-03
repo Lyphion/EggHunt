@@ -1,6 +1,9 @@
 package dev.lyphium.egghunt;
 
 import dev.lyphium.egghunt.command.EggHuntCommand;
+import dev.lyphium.egghunt.manager.ResourceManager;
+import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.manager.StatisticManager;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
@@ -17,12 +20,20 @@ public final class EggHunt extends JavaPlugin {
 
     private static EggHunt instance;
 
+    private ResourceManager resourceManager;
+    private EggManager eggManager;
+    private StatisticManager statisticManager;
+
     public EggHunt() {
         instance = this;
     }
 
     @Override
     public void onEnable() {
+        resourceManager = new ResourceManager();
+        eggManager = new EggManager(resourceManager);
+        statisticManager = new StatisticManager();
+
         registerLanguages();
         registerCommands();
         registerListeners();
@@ -51,7 +62,9 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerCommands() {
-        new EggHuntCommand().register(Objects.requireNonNull(getCommand("egghunt")));
+        new EggHuntCommand(
+                resourceManager, eggManager, statisticManager
+        ).register(Objects.requireNonNull(getCommand("egghunt")));
     }
 
     private void registerListeners() {
