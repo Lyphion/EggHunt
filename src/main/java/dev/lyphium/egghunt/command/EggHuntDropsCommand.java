@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class EggHuntFindCommand implements SubCommand {
+public final class EggHuntDropsCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {

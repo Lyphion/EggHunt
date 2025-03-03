@@ -16,4 +16,3 @@ commands:
   egghunt:
     description: Manage plugin
     usage: egghunt help
-    permission: egghunt.admin
