@@ -22,7 +22,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
 
     public EggHuntCommand() {
         this.subCommands = new TreeMap<>(Map.of(
-                "help", new TraderHelpCommand(this)
+                "help", new EggHuntHelpCommand(this)
         ));
     }
 
@@ -53,7 +53,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         final String name = args[0].toLowerCase();
 
         if (args.length == 1) {

@@ -10,11 +10,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class TraderHelpCommand implements SubCommand {
+public final class EggHuntHelpCommand implements SubCommand {
 
     private final EggHuntCommand parent;
 
-    public TraderHelpCommand(EggHuntCommand parent) {
+    public EggHuntHelpCommand(EggHuntCommand parent) {
         this.parent = parent;
     }
 
