@@ -15,5 +15,5 @@ permissions:
 commands:
   egghunt:
     description: Manage plugin
-    usage: trader help
-    permission: trader.admin
+    usage: egghunt help
+    permission: egghunt.admin
