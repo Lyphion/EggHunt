@@ -1,0 +1,19 @@
+name: EggHunt
+version: '${version}'
+main: dev.lyphium.egghunt.EggHunt
+api-version: '1.21'
+prefix: EggHunt
+load: POSTWORLD
+author: Lyphion
+description: Single easter egg hunt plugin
+
+permissions:
+  egghunt.admin:
+    description: Admin permission
+    default: op
+
+commands:
+  egghunt:
+    description: Manage plugin
+    usage: trader help
+    permission: trader.admin
