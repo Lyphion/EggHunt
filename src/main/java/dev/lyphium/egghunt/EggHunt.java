@@ -1,8 +1,8 @@
 package dev.lyphium.egghunt;
 
 import dev.lyphium.egghunt.command.EggHuntCommand;
-import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -18,6 +18,14 @@ import java.util.logging.Logger;
 
 public final class EggHunt extends JavaPlugin {
 
+    /*
+    *   eine Itemart mit Range
+    *   Item-Entity -> Pick -> Linksclick zum Öffnen
+    *   Datei für Stats reicht
+    *   Spieler Counter -> spawn für alle in range
+    *   Cmd über Server Console
+    */
+
     private static EggHunt instance;
 
     private ResourceManager resourceManager;
@@ -30,7 +38,7 @@ public final class EggHunt extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        resourceManager = new ResourceManager();
+        resourceManager = new ResourceManager(this);
         eggManager = new EggManager(this, resourceManager);
         statisticManager = new StatisticManager();
 
@@ -48,7 +56,6 @@ public final class EggHunt extends JavaPlugin {
     public void onDisable() {
         resourceManager.saveResources();
         statisticManager.saveStatistics();
-        eggManager.removeAll();
 
         getLogger().info("Plugin deactivated");
     }
@@ -69,9 +76,8 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerCommands() {
-        new EggHuntCommand(
-                resourceManager, eggManager, statisticManager
-        ).register(Objects.requireNonNull(getCommand("egghunt")));
+        new EggHuntCommand(resourceManager, eggManager, statisticManager)
+                .register(Objects.requireNonNull(getCommand("egghunt")));
     }
 
     private void registerListeners() {

@@ -1,6 +1,7 @@
 package dev.lyphium.egghunt.command;
 
 import dev.lyphium.egghunt.manager.ResourceManager;
+import dev.lyphium.egghunt.util.PermissionConstants;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,6 +13,11 @@ public final class EggHuntModelCommand implements SubCommand {
 
     public EggHuntModelCommand(@NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
+    }
+
+    @Override
+    public String getMinimumPermission() {
+        return PermissionConstants.ADMIN;
     }
 
     @Override

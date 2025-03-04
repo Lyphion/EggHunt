@@ -8,6 +8,10 @@ import java.util.List;
 
 public interface SubCommand {
 
+    default String getMinimumPermission() {
+        return "";
+    }
+
     boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args);
 
     @Nullable List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args);

@@ -1,7 +1,7 @@
 package dev.lyphium.egghunt.command;
 
-import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
@@ -34,7 +34,8 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
                 "help", new EggHuntHelpCommand(this),
                 "leaderboard", new EggHuntLeaderboardCommand(statisticManager),
                 "model", new EggHuntModelCommand(resourceManager),
-                "spawn", new EggHuntSpawnCommand(eggManager)
+                "spawn", new EggHuntSpawnCommand(eggManager),
+                "toggle", new EggHuntToggleCommand(eggManager)
         ));
     }
 
@@ -54,6 +55,13 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
         }
 
         final SubCommand subCommand = subCommands.get(name);
+
+        // Check if user has permission
+        if (!sender.hasPermission(subCommand.getMinimumPermission())) {
+            sender.sendMessage(errorMessage(sender, "help"));
+            return false;
+        }
+
         final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
         final boolean success = subCommand.handleCommand(sender, remaining);
 
@@ -69,9 +77,11 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
         final String name = args[0].toLowerCase();
 
         if (args.length == 1) {
-            return subCommands.keySet()
+            return subCommands.entrySet()
                     .stream()
-                    .filter(s -> s.startsWith(name))
+                    .filter(s -> s.getKey().startsWith(name))
+                    .filter(s -> sender.hasPermission(s.getValue().getMinimumPermission()))
+                    .map(Map.Entry::getKey)
                     .toList();
         }
 

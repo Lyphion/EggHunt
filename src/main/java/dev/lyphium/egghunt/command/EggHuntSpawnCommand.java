@@ -1,6 +1,7 @@
 package dev.lyphium.egghunt.command;
 
 import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.util.PermissionConstants;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,6 +13,11 @@ public final class EggHuntSpawnCommand implements SubCommand {
 
     public EggHuntSpawnCommand(@NotNull EggManager eggManager) {
         this.eggManager = eggManager;
+    }
+
+    @Override
+    public String getMinimumPermission() {
+        return PermissionConstants.ADMIN;
     }
 
     @Override

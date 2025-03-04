@@ -8,11 +8,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class EggHuntFindCommand implements SubCommand {
+public final class EggHuntToggleCommand implements SubCommand {
 
     private final EggManager eggManager;
 
-    public EggHuntFindCommand(@NotNull EggManager eggManager) {
+    public EggHuntToggleCommand(@NotNull EggManager eggManager) {
         this.eggManager = eggManager;
     }
 
