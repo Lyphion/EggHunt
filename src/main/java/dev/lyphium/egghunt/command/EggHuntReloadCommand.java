@@ -7,12 +7,9 @@ import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
-import java.nio.Buffer;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -41,8 +38,9 @@ public final class EggHuntReloadCommand implements SubCommand {
         }
 
         try {
+            eggManager.setActive(false);
             resourceManager.loadResources();
-            Bukkit.getOnlinePlayers().stream().map(Entity::getUniqueId).forEach(eggManager::resetSpawnTimer);
+            eggManager.setActive(true);
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.reload.success", ColorConstants.SUCCESS)));
         } catch (Exception e) {

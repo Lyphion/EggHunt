@@ -1,5 +1,6 @@
 package dev.lyphium.egghunt.command;
 
+import dev.lyphium.egghunt.inventory.EasterEggInventory;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
@@ -11,11 +12,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class EggHuntModelCommand implements SubCommand {
+public final class EggHuntModelsCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
 
-    public EggHuntModelCommand(@NotNull ResourceManager resourceManager) {
+    public EggHuntModelsCommand(@NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 
@@ -35,8 +36,7 @@ public final class EggHuntModelCommand implements SubCommand {
             return false;
         }
 
-        // TODO Open Inventory
-
+        player.openInventory(new EasterEggInventory(resourceManager).getInventory());
         return true;
     }
 

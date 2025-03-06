@@ -3,7 +3,6 @@ package dev.lyphium.egghunt.manager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -37,14 +36,18 @@ public final class EggManager {
     private final Random random = new Random(System.currentTimeMillis());
 
     @Getter
-    @Setter
-    private boolean active = true;
+    private boolean active;
 
     public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
 
         Bukkit.getScheduler().runTaskTimer(plugin, this::handleUpdate, 20, 20);
-        Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).forEach(this::resetSpawnTimer);
+        setActive(true);
+    }
+
+    public void setActive(boolean active) {
+        nextSpawns.clear();
+        this.active = active;
     }
 
     public void spawn(@NotNull Location location) {
@@ -60,12 +63,12 @@ public final class EggManager {
             item = resourceManager.getEggs().get(random.nextInt(resourceManager.getEggs().size())).clone();
         }
 
-        item.editMeta(i -> {
-            final PersistentDataContainer container = i.getPersistentDataContainer();
+        item.editMeta(meta -> {
+            final PersistentDataContainer container = meta.getPersistentDataContainer();
             container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
             container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
 
-            final List<Component> lore = i.hasLore() ? new ArrayList<>(Objects.requireNonNull(i.lore())) : new ArrayList<>();
+            final List<Component> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.lore())) : new ArrayList<>();
 
             final Component description = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
                             Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
@@ -80,7 +83,7 @@ public final class EggManager {
                 lore.add(Component.empty());
             lore.add(description);
 
-            i.lore(lore);
+            meta.lore(lore);
         });
 
         final World world = spawn.getWorld();
@@ -116,26 +119,22 @@ public final class EggManager {
     }
 
     public void handleUpdate() {
-        final List<UUID> removals = new ArrayList<>();
+        if (!active)
+            return;
 
-        for (final Map.Entry<UUID, Long> entry : nextSpawns.entrySet()) {
-            final Player player = Bukkit.getPlayer(entry.getKey());
+        for (final Player player : Bukkit.getOnlinePlayers()) {
+            final UUID uuid = player.getUniqueId();
 
-            if (player == null || !player.isOnline()) {
-                removals.add(entry.getKey());
+            if (!nextSpawns.containsKey(uuid)) {
+                resetSpawnTimer(uuid);
                 continue;
             }
 
-            if (entry.getValue() > System.currentTimeMillis())
+            if (nextSpawns.get(uuid) > System.currentTimeMillis())
                 continue;
 
             spawn(player.getLocation());
-            resetSpawnTimer(entry.getKey());
-        }
-
-        // Remove outdated players
-        for (final UUID uuid : removals) {
-            nextSpawns.remove(uuid);
+            resetSpawnTimer(uuid);
         }
     }
 

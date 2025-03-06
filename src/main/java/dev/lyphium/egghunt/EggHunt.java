@@ -1,7 +1,7 @@
 package dev.lyphium.egghunt;
 
 import dev.lyphium.egghunt.command.EggHuntCommand;
-import dev.lyphium.egghunt.listener.PlayerLister;
+import dev.lyphium.egghunt.listener.PlayerListener;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
@@ -81,7 +81,7 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerLister(resourceManager, eggManager, statisticManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(resourceManager, eggManager, statisticManager), this);
     }
 
     public static @NotNull Logger getPluginLogger() {

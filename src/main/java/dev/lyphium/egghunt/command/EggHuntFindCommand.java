@@ -12,7 +12,6 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
 import java.util.List;
 
 public final class EggHuntFindCommand implements SubCommand {

@@ -14,7 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-public final class PlayerLister implements Listener {
+public final class PlayerListener implements Listener {
 
     private final Random random = new Random(System.currentTimeMillis());
 
@@ -33,7 +32,7 @@ public final class PlayerLister implements Listener {
     private final EggManager eggManager;
     private final StatisticManager statisticManager;
 
-    public PlayerLister(
+    public PlayerListener(
             @NotNull ResourceManager resourceManager,
             @NotNull EggManager eggManager,
             @NotNull StatisticManager statisticManager
@@ -41,12 +40,6 @@ public final class PlayerLister implements Listener {
         this.resourceManager = resourceManager;
         this.eggManager = eggManager;
         this.statisticManager = statisticManager;
-    }
-
-    @EventHandler
-    private void onPlayerJoin(@NotNull PlayerJoinEvent event) {
-        final Player player = event.getPlayer();
-        eggManager.resetSpawnTimer(player.getUniqueId());
     }
 
     @EventHandler

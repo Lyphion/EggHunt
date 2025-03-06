@@ -1,5 +1,6 @@
 package dev.lyphium.egghunt.command;
 
+import dev.lyphium.egghunt.inventory.DropsInventory;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
@@ -35,8 +36,7 @@ public final class EggHuntDropsCommand implements SubCommand {
             return false;
         }
 
-        // TODO Open Inventory
-
+        player.openInventory(new DropsInventory(resourceManager, player.locale()).getInventory());
         return true;
     }
 

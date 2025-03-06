@@ -35,7 +35,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
                 "find", new EggHuntFindCommand(resourceManager),
                 "help", new EggHuntHelpCommand(this),
                 "leaderboard", new EggHuntLeaderboardCommand(plugin, statisticManager),
-                "model", new EggHuntModelCommand(resourceManager),
+                "models", new EggHuntModelsCommand(resourceManager),
                 "reload", new EggHuntReloadCommand(resourceManager, eggManager),
                 "spawn", new EggHuntSpawnCommand(eggManager),
                 "toggle", new EggHuntToggleCommand(eggManager)
