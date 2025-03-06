@@ -1,5 +1,7 @@
 package dev.lyphium.egghunt.manager;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,6 +11,7 @@ public final class EggManager {
 
     private final ResourceManager resourceManager;
 
+    @Getter @Setter
     private boolean active = true;
 
     public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager) {

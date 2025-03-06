@@ -34,6 +34,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
                 "help", new EggHuntHelpCommand(this),
                 "leaderboard", new EggHuntLeaderboardCommand(statisticManager),
                 "model", new EggHuntModelCommand(resourceManager),
+                "reload", new EggHuntReloadCommand(resourceManager),
                 "spawn", new EggHuntSpawnCommand(eggManager),
                 "toggle", new EggHuntToggleCommand(eggManager)
         ));
@@ -62,9 +63,11 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
+        // Run subcommand
         final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
         final boolean success = subCommand.handleCommand(sender, remaining);
 
+        // If something bad happened, print error message
         if (!success) {
             sender.sendMessage(errorMessage(sender, name));
         }

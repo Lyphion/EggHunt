@@ -54,9 +54,6 @@ public final class EggHunt extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        resourceManager.saveResources();
-        statisticManager.saveStatistics();
-
         getLogger().info("Plugin deactivated");
     }
 

@@ -8,14 +8,15 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public final class EasterEggDrop {
 
+    @Nullable
     private final ItemStack itemDrop;
 
     private final int minimumAmount, maximumAmount;
 
-    private final int weight;
-
     @Nullable
     private final String commandDrop;
+
+    private final int weight;
 
     public EasterEggDrop(@NotNull ItemStack itemDrop, int minimumAmount, int maximumAmount, int weight) {
         this.itemDrop = itemDrop;
@@ -26,9 +27,8 @@ public final class EasterEggDrop {
     }
 
     public EasterEggDrop(@NotNull String commandDrop, int weight) {
-        this.itemDrop = ItemStack.empty();
-        this.minimumAmount = 0;
-        this.maximumAmount = 0;
+        this.itemDrop = null;
+        this.minimumAmount = this.maximumAmount = 0;
         this.weight = weight;
         this.commandDrop = commandDrop;
     }

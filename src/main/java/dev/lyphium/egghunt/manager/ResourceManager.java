@@ -12,17 +12,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.IOException;
+import java.util.*;
 
 @Getter
 public final class ResourceManager {
 
     private final JavaPlugin plugin;
 
-    private final List<Material> validBlocks = new ArrayList<>();
+    private final Set<Material> validBlocks = new HashSet<>();
 
     private final List<ItemStack> eggs = new ArrayList<>();
 
@@ -43,21 +41,10 @@ public final class ResourceManager {
         // Save default config
         plugin.saveDefaultConfig();
 
-        // Save default eggs config
-        final File eggsFile = new File(plugin.getDataFolder(), "eggs.yml");
-        if (!eggsFile.exists()) {
-            plugin.saveResource("eggs.yml", false);
-        }
-
-        // Save default drops config
-        final File dropsFile = new File(plugin.getDataFolder(), "drops.yml");
-        if (!dropsFile.exists()) {
-            plugin.saveResource("drops.yml", false);
-        }
-
+        // Load configs
         final FileConfiguration config = plugin.getConfig();
-        final FileConfiguration eggsConfig = YamlConfiguration.loadConfiguration(eggsFile);
-        final FileConfiguration dropsConfig = YamlConfiguration.loadConfiguration(dropsFile);
+        final FileConfiguration eggsConfig = loadConfig("eggs.yml");
+        final FileConfiguration dropsConfig = loadConfig("drops.yml");
 
         // Load range values
         minimumRange = config.getInt("Spawn.Range.Minimum", 10);
@@ -85,6 +72,8 @@ public final class ResourceManager {
                 (float) config.getDouble("Sound.Open.Pitch")
         );
 
+        validBlocks.clear();
+
         // Load valid blocks for eggs
         for (final String materials : Objects.requireNonNull(config.getStringList("Locations"))) {
             final Material material = Material.matchMaterial(materials);
@@ -93,6 +82,8 @@ public final class ResourceManager {
                 validBlocks.add(material);
         }
 
+        eggs.clear();
+
         // Load Items for eggs
         for (final Object o : eggsConfig.getList("Eggs", List.of())) {
             if (o instanceof ItemStack item) {
@@ -100,30 +91,36 @@ public final class ResourceManager {
             }
         }
 
-        // Load Item drops from eggs
-        for (final Object o : dropsConfig.getList("Drops.Items", List.of())) {
-            if (o instanceof Map<?, ?> map) {
-                final Object itemData = map.getOrDefault("Item", null);
-                final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : 1;
-                final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : 1;
-                final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
+        drops.clear();
 
-                if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
-                        && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
-                    drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, weight));
-                }
+        // Load Item drops from eggs
+        for (final Object o : dropsConfig.getList("Items", List.of())) {
+            if (!(o instanceof Map<?, ?> map)) {
+                continue;
+            }
+
+            final Object itemData = map.getOrDefault("Item", null);
+            final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : Integer.valueOf(1);
+            final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : Integer.valueOf(1);
+            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : Integer.valueOf(1);
+
+            if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
+                    && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
+                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, weight));
             }
         }
 
         // Load Command drops from eggs
-        for (final Object o : dropsConfig.getList("Drops.Commands", List.of())) {
-            if (o instanceof Map<?, ?> map) {
-                final Object commandData = map.getOrDefault("Command", null);
-                final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
+        for (final Object o : dropsConfig.getList("Commands", List.of())) {
+            if (!(o instanceof Map<?, ?> map)) {
+                continue;
+            }
 
-                if (commandData instanceof String command && weightData instanceof Integer weight) {
-                    drops.add(new EasterEggDrop(command, weight));
-                }
+            final Object commandData = map.getOrDefault("Command", null);
+            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : Integer.valueOf(1);
+
+            if (commandData instanceof String command && weightData instanceof Integer weight) {
+                drops.add(new EasterEggDrop(command, weight));
             }
         }
 
@@ -131,11 +128,47 @@ public final class ResourceManager {
         totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
     }
 
+    @SuppressWarnings("UnnecessaryBoxing")
     public void saveResources() {
-        final FileConfiguration config = plugin.getConfig();
+        final FileConfiguration eggsConfig = new YamlConfiguration();
+        final FileConfiguration dropsConfig = new YamlConfiguration();
 
+        eggsConfig.set("Eggs", eggs);
 
-        plugin.saveConfig();
+        final List<Map<String, Object>> itemDrops = new ArrayList<>();
+        final List<Map<String, Object>> commandDrops = new ArrayList<>();
+
+        for (final EasterEggDrop drop : drops) {
+            if (drop.getItemDrop() != null) {
+                final HashMap<String, Object> map = new HashMap<>();
+                map.put("Item", drop.getItemDrop());
+                map.put("Minimum", Integer.valueOf(drop.getMinimumAmount()));
+                map.put("Maximum", Integer.valueOf(drop.getMaximumAmount()));
+                map.put("Weight", Integer.valueOf(drop.getWeight()));
+
+                itemDrops.add(map);
+            } else if (drop.getCommandDrop() != null) {
+                final HashMap<String, Object> map = new HashMap<>();
+                map.put("Command", drop.getCommandDrop());
+                map.put("Weight", Integer.valueOf(drop.getWeight()));
+
+                commandDrops.add(map);
+            }
+        }
+
+        dropsConfig.set("Items", itemDrops);
+        dropsConfig.set("Commands", commandDrops);
+
+        // Save configs
+        try {
+            final File eggsFile = new File(plugin.getDataFolder(), "eggs.yml");
+            final File dropsFile = new File(plugin.getDataFolder(), "drops.yml");
+
+            eggsConfig.save(eggsFile);
+            dropsConfig.save(dropsFile);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Failed to save configs");
+        }
     }
 
     private int toSeconds(@NotNull String time) {
@@ -150,5 +183,15 @@ public final class ResourceManager {
         seconds += Integer.parseInt(parts[i]);
 
         return seconds;
+    }
+
+    private @NotNull FileConfiguration loadConfig(@NotNull String path) {
+        // Save default config
+        final File file = new File(plugin.getDataFolder(), path);
+        if (!file.exists()) {
+            plugin.saveResource(path, false);
+        }
+
+        return YamlConfiguration.loadConfiguration(file);
     }
 }

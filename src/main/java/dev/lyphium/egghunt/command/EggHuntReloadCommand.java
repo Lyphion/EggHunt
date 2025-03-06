@@ -1,18 +1,18 @@
 package dev.lyphium.egghunt.command;
 
-import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public final class EggHuntToggleCommand implements SubCommand {
+public final class EggHuntReloadCommand implements SubCommand {
 
-    private final EggManager eggManager;
+    private final ResourceManager resourceManager;
 
-    public EggHuntToggleCommand(@NotNull EggManager eggManager) {
-        this.eggManager = eggManager;
+    public EggHuntReloadCommand(@NotNull ResourceManager resourceManager) {
+        this.resourceManager = resourceManager;
     }
 
     @Override
@@ -26,9 +26,12 @@ public final class EggHuntToggleCommand implements SubCommand {
             return false;
         }
 
-        eggManager.setActive(!eggManager.isActive());
-
-        // TODO Print success message
+        try {
+            resourceManager.loadResources();
+            // TODO Print success message
+        } catch (Exception e) {
+            // TODO Print error message
+        }
 
         return true;
     }
