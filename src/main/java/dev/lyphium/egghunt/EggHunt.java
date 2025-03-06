@@ -20,14 +20,6 @@ import java.util.logging.Logger;
 
 public final class EggHunt extends JavaPlugin {
 
-    /*
-     *   eine Itemart mit Range
-     *   Item-Entity -> Pick -> Linksclick zum Öffnen
-     *   Datei für Stats reicht
-     *   Spieler Counter -> spawn für alle in range
-     *   Cmd über Server Console
-     */
-
     private static EggHunt instance;
 
     private ResourceManager resourceManager;
