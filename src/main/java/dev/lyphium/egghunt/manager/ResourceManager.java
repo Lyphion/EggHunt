@@ -55,7 +55,7 @@ public final class ResourceManager {
         maximumDuration = toSeconds(config.getString("Spawn.Duration.Maximum", "00:30:00"));
 
         // Load lifetime
-        lifetime = toSeconds(config.getString("Spawn.Duration.Lifetime", "00:05:00"));
+        lifetime = toSeconds(config.getString("Spawn.Lifetime", "00:05:00"));
 
         // Load sounds
         spawnSound = Sound.sound(

@@ -4,9 +4,13 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,9 +22,19 @@ public final class StatisticManager {
             .comparingInt((Map.Entry<UUID, Integer> e) -> -e.getValue())
             .thenComparing(Map.Entry::getKey);
 
-    public final Map<UUID, Integer> statistics = new ConcurrentHashMap<>();
+    private final JavaPlugin plugin;
+
+    private final Map<UUID, Integer> statistics = new ConcurrentHashMap<>();
+    private boolean changed;
+
+    public StatisticManager(@NotNull JavaPlugin plugin) {
+        this.plugin = plugin;
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveStatistics, 60 * 20, 60 * 20);
+    }
 
     public int addPoints(@NotNull Player player, int points) {
+        changed = true;
         return statistics.merge(player.getUniqueId(), points, Integer::sum);
     }
 
@@ -49,11 +63,37 @@ public final class StatisticManager {
     }
 
     public void loadStatistics() {
+        // Save default config
+        final File file = new File(plugin.getDataFolder(), "statistics.yml");
+        var config = YamlConfiguration.loadConfiguration(file);
 
+        statistics.clear();
+        for (final String key : config.getKeys(false)) {
+            final UUID uuid = UUID.fromString(key);
+            final int points = config.getInt(key);
+
+            statistics.put(uuid, points);
+        }
     }
 
     public void saveStatistics() {
+        if (!changed)
+            return;
 
+        final YamlConfiguration config = new YamlConfiguration();
+
+        for (final Map.Entry<UUID, Integer> entry : statistics.entrySet()) {
+            config.set(entry.getKey().toString(), entry.getValue());
+        }
+
+        // Save configs
+        try {
+            final File file = new File(plugin.getDataFolder(), "statistics.yml");
+            config.save(file);
+            changed = false;
+        } catch (IOException e) {
+            plugin.getLogger().warning("Failed to save configs");
+        }
     }
 
     private static @NotNull CompletableFuture<Optional<String>> getName(@NotNull UUID uuid) {
@@ -69,5 +109,4 @@ public final class StatisticManager {
             return CompletableFuture.completedFuture(Optional.empty());
         }
     }
-
 }
