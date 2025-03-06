@@ -73,7 +73,7 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerCommands() {
-        new EggHuntCommand(resourceManager, eggManager, statisticManager)
+        new EggHuntCommand(this, resourceManager, eggManager, statisticManager)
                 .register(Objects.requireNonNull(getCommand("egghunt")));
     }
 

@@ -9,23 +9,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public final class StatisticManager {
 
-    public final Map<UUID, Integer> statistics = new HashMap<>();
+    private static final Comparator<Map.Entry<UUID, Integer>> COMPARATOR = Comparator
+            .comparingInt((Map.Entry<UUID, Integer> e) -> -e.getValue())
+            .thenComparing(Map.Entry::getKey);
 
-    public void addPoints(@NotNull Player player, int points) {
-        statistics.merge(player.getUniqueId(), points, Integer::sum);
+    public final Map<UUID, Integer> statistics = new ConcurrentHashMap<>();
+
+    public int addPoints(@NotNull Player player, int points) {
+        return statistics.merge(player.getUniqueId(), points, Integer::sum);
     }
 
-    public int getPoints(@NotNull Player player) {
-        return statistics.getOrDefault(player.getUniqueId(), 0);
+    public Tuple<Integer, Integer> getStatistic(@NotNull Player player) {
+        int points = statistics.getOrDefault(player.getUniqueId(), 0);
+
+        if (points == 0) {
+            return new Tuple<>(-1, 0);
+        }
+
+        long rank = statistics.entrySet().stream()
+                .sorted(COMPARATOR)
+                .takeWhile(e -> !e.getKey().equals(player.getUniqueId()))
+                .count() + 1;
+
+        return new Tuple<>((int) rank, points);
     }
 
     public @NotNull List<Tuple<String, Integer>> getLeaderboard(int count) {
         return statistics.entrySet().stream()
-                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .sorted(COMPARATOR)
                 .limit(count)
                 .map(e -> getName(e.getKey()).thenApply(n -> new Tuple<>(n.orElse("ERROR"), e.getValue())))
                 .map(CompletableFuture::join)

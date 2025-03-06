@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.*;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,6 +25,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
     private final Map<String, SubCommand> subCommands;
 
     public EggHuntCommand(
+            @NotNull JavaPlugin plugin,
             @NotNull ResourceManager resourceManager,
             @NotNull EggManager eggManager,
             @NotNull StatisticManager statisticManager
@@ -32,7 +34,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
                 "drops", new EggHuntDropsCommand(resourceManager),
                 "find", new EggHuntFindCommand(resourceManager),
                 "help", new EggHuntHelpCommand(this),
-                "leaderboard", new EggHuntLeaderboardCommand(statisticManager),
+                "leaderboard", new EggHuntLeaderboardCommand(plugin, statisticManager),
                 "model", new EggHuntModelCommand(resourceManager),
                 "reload", new EggHuntReloadCommand(resourceManager),
                 "spawn", new EggHuntSpawnCommand(eggManager),
