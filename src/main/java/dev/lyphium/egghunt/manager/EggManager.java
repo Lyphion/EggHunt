@@ -29,6 +29,10 @@ import java.util.*;
 
 public final class EggManager {
 
+    public static final Component USAGE_DESCRIPTION = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
+                    Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
+            .decoration(TextDecoration.ITALIC, false);
+
     private final ResourceManager resourceManager;
 
     private final Map<UUID, Long> nextSpawns = new HashMap<>();
@@ -70,18 +74,13 @@ public final class EggManager {
 
             final List<Component> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.lore())) : new ArrayList<>();
 
-            final Component description = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
-                            Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
-                    .decoration(TextDecoration.ITALIC, false);
-
             // Failsafe to only include description once
-            if (lore.contains(description)) {
+            if (lore.contains(USAGE_DESCRIPTION))
                 return;
-            }
 
             if (!lore.isEmpty())
                 lore.add(Component.empty());
-            lore.add(description);
+            lore.add(USAGE_DESCRIPTION);
 
             meta.lore(lore);
         });

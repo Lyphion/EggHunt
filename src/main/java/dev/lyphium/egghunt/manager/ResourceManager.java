@@ -148,7 +148,6 @@ public final class ResourceManager {
         totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
     }
 
-    @SuppressWarnings("UnnecessaryBoxing")
     public void saveResources() {
         final FileConfiguration eggsConfig = new YamlConfiguration();
         final FileConfiguration dropsConfig = new YamlConfiguration();
@@ -162,15 +161,15 @@ public final class ResourceManager {
             if (drop.getItemDrop() != null) {
                 final HashMap<String, Object> map = new HashMap<>();
                 map.put("Item", drop.getItemDrop());
-                map.put("Minimum", Integer.valueOf(drop.getMinimumAmount()));
-                map.put("Maximum", Integer.valueOf(drop.getMaximumAmount()));
-                map.put("Weight", Integer.valueOf(drop.getWeight()));
+                map.put("Minimum", drop.getMinimumAmount());
+                map.put("Maximum", drop.getMaximumAmount());
+                map.put("Weight", drop.getWeight());
 
                 itemDrops.add(map);
             } else if (drop.getCommandDrop() != null) {
                 final HashMap<String, Object> map = new HashMap<>();
                 map.put("Command", drop.getCommandDrop());
-                map.put("Weight", Integer.valueOf(drop.getWeight()));
+                map.put("Weight", drop.getWeight());
 
                 commandDrops.add(map);
             }

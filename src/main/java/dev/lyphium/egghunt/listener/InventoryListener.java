@@ -27,6 +27,11 @@ public final class InventoryListener implements Listener {
             if (slot < 0 || item == null)
                 return;
 
+            // Check for paging
+            if (slot > 45 && slot < 54) {
+                return;
+            }
+
             // Check if new item should be added
             if (slot >= inv.getSize()) {
                 eggInventory.addEgg(item);

@@ -1,5 +1,6 @@
 package dev.lyphium.egghunt.inventory;
 
+import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
@@ -78,11 +79,7 @@ public final class EasterEggInventory implements InventoryHolder {
             container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
 
             final List<Component> lore = Objects.requireNonNull(meta.lore());
-            final Component description = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
-                            Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
-                    .decoration(TextDecoration.ITALIC, false);
-
-            lore.set(lore.size() - 1, description);
+            lore.set(lore.size() - 1, EggManager.USAGE_DESCRIPTION);
             meta.lore(lore);
         });
 
@@ -96,11 +93,8 @@ public final class EasterEggInventory implements InventoryHolder {
             container.remove(NamespacedKeyConstants.EASTER_EGG_KEY);
 
             final List<Component> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.lore())) : new ArrayList<>();
-            final Component description = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
-                            Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
-                    .decoration(TextDecoration.ITALIC, false);
 
-            lore.remove(description);
+            lore.remove(EggManager.USAGE_DESCRIPTION);
             if (!lore.isEmpty() && lore.getLast().equals(Component.empty()))
                 lore.removeLast();
 

@@ -1,7 +1,6 @@
 package dev.lyphium.egghunt.listener;
 
 import dev.lyphium.egghunt.data.EasterEggDrop;
-import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
@@ -62,7 +61,6 @@ public final class PlayerListener implements Listener {
 
         if (item == null || !item.getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.EASTER_EGG_KEY))
             return;
-
 
         final Player player = event.getPlayer();
         if (event.getAction().isRightClick()) {
