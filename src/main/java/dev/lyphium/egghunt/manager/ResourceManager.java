@@ -141,6 +141,9 @@ public final class ResourceManager {
             }
         }
 
+        // Sort drops by weight
+        drops.sort(Comparator.comparingInt(EasterEggDrop::getWeight).reversed());
+
         // Calculate sum of all weight of all drops for drop change
         totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
     }

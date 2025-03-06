@@ -36,7 +36,7 @@ public final class EggHuntModelsCommand implements SubCommand {
             return false;
         }
 
-        player.openInventory(new EasterEggInventory(resourceManager).getInventory());
+        player.openInventory(new EasterEggInventory(resourceManager, player.locale()).getInventory());
         return true;
     }
 

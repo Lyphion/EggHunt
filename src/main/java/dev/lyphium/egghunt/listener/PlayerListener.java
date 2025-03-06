@@ -29,16 +29,13 @@ public final class PlayerListener implements Listener {
     private final Random random = new Random(System.currentTimeMillis());
 
     private final ResourceManager resourceManager;
-    private final EggManager eggManager;
     private final StatisticManager statisticManager;
 
     public PlayerListener(
             @NotNull ResourceManager resourceManager,
-            @NotNull EggManager eggManager,
             @NotNull StatisticManager statisticManager
     ) {
         this.resourceManager = resourceManager;
-        this.eggManager = eggManager;
         this.statisticManager = statisticManager;
     }
 
