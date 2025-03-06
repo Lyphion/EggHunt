@@ -46,7 +46,7 @@ public final class EggHuntFindCommand implements SubCommand {
                 .toList();
 
         for (final Item item : items) {
-            player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2.5, 0, 0.01);
+            player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
         }
 
         int amount = items.size();

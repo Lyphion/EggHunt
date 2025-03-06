@@ -80,9 +80,8 @@ public final class PlayerLister implements Listener {
             return;
         }
 
-        if (!event.getAction().isLeftClick() || !player.isSneaking()) {
+        if (!event.getAction().isLeftClick() || !player.isSneaking())
             return;
-        }
 
         event.setUseItemInHand(Event.Result.DENY);
 

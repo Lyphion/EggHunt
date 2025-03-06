@@ -1,8 +1,11 @@
 package dev.lyphium.egghunt.manager;
 
+import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -54,13 +57,30 @@ public final class EggManager {
         if (resourceManager.getEggs().isEmpty()) {
             item = new ItemStack(Material.EGG);
         } else {
-            item = resourceManager.getEggs().get(random.nextInt(resourceManager.getEggs().size()));
+            item = resourceManager.getEggs().get(random.nextInt(resourceManager.getEggs().size())).clone();
         }
 
         item.editMeta(i -> {
             final PersistentDataContainer container = i.getPersistentDataContainer();
             container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
             container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
+
+            final List<Component> lore = i.hasLore() ? new ArrayList<>(Objects.requireNonNull(i.lore())) : new ArrayList<>();
+
+            final Component description = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
+                            Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
+                    .decoration(TextDecoration.ITALIC, false);
+
+            // Failsafe to only include description once
+            if (lore.contains(description)) {
+                return;
+            }
+
+            if (!lore.isEmpty())
+                lore.add(Component.empty());
+            lore.add(description);
+
+            i.lore(lore);
         });
 
         final World world = spawn.getWorld();
@@ -82,7 +102,8 @@ public final class EggManager {
 
         for (final Player player : world.getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
             player.playSound(resourceManager.getSpawnSound());
-            player.sendActionBar(MiniMessage.miniMessage().deserialize(Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", player.locale())).format(null)));
+            final String format = Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", player.locale())).format(null);
+            player.sendActionBar(MiniMessage.miniMessage().deserialize(format));
         }
     }
 
