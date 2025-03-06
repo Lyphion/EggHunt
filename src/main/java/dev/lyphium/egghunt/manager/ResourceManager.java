@@ -1,6 +1,7 @@
 package dev.lyphium.egghunt.manager;
 
 import dev.lyphium.egghunt.data.EasterEggDrop;
+import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
@@ -18,7 +19,9 @@ import java.util.*;
 @Getter
 public final class ResourceManager {
 
+    @Getter(AccessLevel.NONE)
     private final JavaPlugin plugin;
+    @Getter(AccessLevel.NONE)
     private final Random random = new Random(System.currentTimeMillis());
 
     private final Set<Material> validBlocks = new HashSet<>();
@@ -39,6 +42,11 @@ public final class ResourceManager {
     }
 
     public @NotNull EasterEggDrop getRandomDrop() {
+        // Check if at least one item is registered
+        if (totalWeight == 0)
+            // Backup if no drops are registered
+            return new EasterEggDrop(new ItemStack(Material.EGG), 1, 1, 1);
+
         int index = random.nextInt(totalWeight);
 
         for (final EasterEggDrop drop : drops) {
@@ -123,7 +131,7 @@ public final class ResourceManager {
 
             if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
                     && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, weight));
+                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, Math.max(weight, 1)));
             }
         }
 
@@ -137,7 +145,7 @@ public final class ResourceManager {
             final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
 
             if (commandData instanceof String command && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(command, weight));
+                drops.add(new EasterEggDrop(command, Math.max(weight, 1)));
             }
         }
 

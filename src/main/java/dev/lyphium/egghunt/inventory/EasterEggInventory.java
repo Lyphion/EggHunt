@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +25,8 @@ import java.util.Objects;
 
 public final class EasterEggInventory implements InventoryHolder {
 
+    private static final int PAGE_SIZE = 45;
+
     @Getter
     private final Inventory inventory;
     private final ResourceManager resourceManager;
@@ -37,20 +40,32 @@ public final class EasterEggInventory implements InventoryHolder {
     ) {
         this.resourceManager = resourceManager;
         this.locale = locale;
-        this.inventory = Bukkit.createInventory(this, 54, Component.translatable("inventory.eggs.title", ColorConstants.ERROR));
+        this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("inventory.eggs.title", ColorConstants.ERROR));
 
         fillInventory();
     }
 
-    public void changePage(int page) {
+    public void changePage(int delta) {
+        int newPage = page + delta;
+        if (newPage < 0)
+            newPage = 0;
+
+        final int maxPages = resourceManager.getEggs().isEmpty() ? 0 : (resourceManager.getEggs().size() - 1) / PAGE_SIZE;
+        if (newPage > maxPages)
+            newPage = maxPages;
+
+        page = newPage;
         fillInventory();
     }
 
     private void fillInventory() {
         final List<ItemStack> eggs = resourceManager.getEggs();
 
+        int startIndex = page * PAGE_SIZE;
+        int endIndex = Math.min((page + 1) * PAGE_SIZE, eggs.size());
+
         inventory.clear();
-        for (int i = 0; i < eggs.size() && i < 54; i++) {
+        for (int i = startIndex; i < endIndex; i++) {
             final ItemStack item = eggs.get(i).clone();
 
             item.editMeta(meta -> {
@@ -64,13 +79,21 @@ public final class EasterEggInventory implements InventoryHolder {
                 meta.lore(lore);
             });
 
-            inventory.setItem(i, item);
+            inventory.setItem(i - startIndex, item);
         }
+
+        final ItemStack previous = new ItemStack(Material.ARROW);
+        previous.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        inventory.setItem(PAGE_SIZE, previous);
+
+        final ItemStack next = new ItemStack(Material.ARROW);
+        next.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        inventory.setItem(PAGE_SIZE + 8, next);
     }
 
     public @Nullable ItemStack getEgg(int slot) {
         ItemStack item = inventory.getItem(slot);
-        if (item == null)
+        if (item == null || slot < 0 || slot >= PAGE_SIZE)
             return null;
 
         item = item.clone();
@@ -109,7 +132,7 @@ public final class EasterEggInventory implements InventoryHolder {
 
     public @Nullable ItemStack removeEgg(int slot) {
         final ItemStack item = inventory.getItem(slot);
-        if (item == null)
+        if (item == null || slot < 0 || slot >= PAGE_SIZE)
             return null;
 
         item.editMeta(meta -> {

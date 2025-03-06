@@ -62,6 +62,7 @@ public final class EggManager {
 
         final ItemStack item;
         if (resourceManager.getEggs().isEmpty()) {
+            // Backup if no eggs are registered
             item = new ItemStack(Material.EGG);
         } else {
             item = resourceManager.getEggs().get(random.nextInt(resourceManager.getEggs().size())).clone();

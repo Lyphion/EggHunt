@@ -28,7 +28,8 @@ public final class InventoryListener implements Listener {
                 return;
 
             // Check for paging
-            if (slot > 45 && slot < 54) {
+            if (slot == 45 || slot == 53) {
+                eggInventory.changePage(slot == 45 ? -1 : 1);
                 return;
             }
 
