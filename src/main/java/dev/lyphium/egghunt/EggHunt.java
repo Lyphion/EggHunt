@@ -81,7 +81,7 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerLister(eggManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerLister(resourceManager, eggManager, statisticManager), this);
     }
 
     public static @NotNull Logger getPluginLogger() {

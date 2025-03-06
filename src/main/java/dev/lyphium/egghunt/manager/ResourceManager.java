@@ -19,6 +19,7 @@ import java.util.*;
 public final class ResourceManager {
 
     private final JavaPlugin plugin;
+    private final Random random = new Random(System.currentTimeMillis());
 
     private final Set<Material> validBlocks = new HashSet<>();
 
@@ -37,9 +38,25 @@ public final class ResourceManager {
         this.plugin = plugin;
     }
 
+    public @NotNull EasterEggDrop getRandomDrop() {
+        int index = random.nextInt(totalWeight);
+
+        for (final EasterEggDrop drop : drops) {
+            if (index < drop.getWeight()) {
+                return drop;
+            }
+
+            index -= drop.getWeight();
+        }
+
+        // Should never happen
+        throw new IllegalStateException("No drop found");
+    }
+
     public void loadResources() {
         // Save default config
         plugin.saveDefaultConfig();
+        plugin.reloadConfig();
 
         // Load configs
         final FileConfiguration config = plugin.getConfig();

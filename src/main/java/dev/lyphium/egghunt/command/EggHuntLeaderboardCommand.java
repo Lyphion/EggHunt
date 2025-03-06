@@ -44,7 +44,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
                         .content("» ").color(ColorConstants.DEFAULT)
                         .append(Component.text("#" + (i + 1), ColorConstants.HIGHLIGHT))
                         .append(Component.text(": ", ColorConstants.DEFAULT))
-                        .append(Component.text(statistic.getA(), ColorConstants.WHITE))
+                        .append(Component.text(statistic.getA(), sender instanceof Player && statistic.getA().equals(sender.getName()) ? ColorConstants.SUCCESS : ColorConstants.WHITE))
                         .append(Component.text(" (", ColorConstants.DEFAULT))
                         .append(Component.text(statistic.getB(), ColorConstants.ERROR))
                         .append(Component.text(")", ColorConstants.DEFAULT));
@@ -62,7 +62,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
                         .content("» ").color(ColorConstants.DEFAULT)
                         .append(Component.text("#" + statistic.getA(), ColorConstants.HIGHLIGHT))
                         .append(Component.text(": ", ColorConstants.DEFAULT))
-                        .append(Component.text(player.getName(), ColorConstants.WHITE))
+                        .append(Component.text(player.getName(), ColorConstants.SUCCESS))
                         .append(Component.text(" (", ColorConstants.DEFAULT))
                         .append(Component.text(statistic.getB(), ColorConstants.ERROR))
                         .append(Component.text(")", ColorConstants.DEFAULT));
