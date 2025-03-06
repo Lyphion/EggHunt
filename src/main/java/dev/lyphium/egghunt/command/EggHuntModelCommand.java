@@ -1,8 +1,12 @@
 package dev.lyphium.egghunt.command;
 
 import dev.lyphium.egghunt.manager.ResourceManager;
+import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
+import dev.lyphium.egghunt.util.TextConstants;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -22,7 +26,18 @@ public final class EggHuntModelCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return false;
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
+            return true;
+        }
+
+        if (args.length != 0) {
+            return false;
+        }
+
+        // TODO Open Inventory
+
+        return true;
     }
 
     @Override

@@ -100,9 +100,9 @@ public final class ResourceManager {
             }
 
             final Object itemData = map.getOrDefault("Item", null);
-            final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : Integer.valueOf(1);
-            final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : Integer.valueOf(1);
-            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : Integer.valueOf(1);
+            final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : 1;
+            final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : 1;
+            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
 
             if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
                     && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
@@ -117,7 +117,7 @@ public final class ResourceManager {
             }
 
             final Object commandData = map.getOrDefault("Command", null);
-            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : Integer.valueOf(1);
+            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
 
             if (commandData instanceof String command && weightData instanceof Integer weight) {
                 drops.add(new EasterEggDrop(command, weight));

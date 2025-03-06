@@ -3,7 +3,6 @@ package dev.lyphium.egghunt.command;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -17,11 +16,17 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return false;
+        if (args.length != 0) {
+            return false;
+        }
+
+        // TODO Load statistics of Top10 and if player of self
+
+        return true;
     }
 
     @Override
-    public @Nullable List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         return List.of();
     }
 }

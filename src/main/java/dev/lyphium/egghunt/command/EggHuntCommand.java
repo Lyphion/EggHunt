@@ -30,7 +30,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
     ) {
         this.subCommands = new TreeMap<>(Map.of(
                 "drops", new EggHuntDropsCommand(resourceManager),
-                "find", new EggHuntFindCommand(eggManager),
+                "find", new EggHuntFindCommand(resourceManager),
                 "help", new EggHuntHelpCommand(this),
                 "leaderboard", new EggHuntLeaderboardCommand(statisticManager),
                 "model", new EggHuntModelCommand(resourceManager),

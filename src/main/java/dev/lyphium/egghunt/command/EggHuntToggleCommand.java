@@ -1,7 +1,10 @@
 package dev.lyphium.egghunt.command;
 
 import dev.lyphium.egghunt.manager.EggManager;
+import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
+import dev.lyphium.egghunt.util.TextConstants;
+import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +31,11 @@ public final class EggHuntToggleCommand implements SubCommand {
 
         eggManager.setActive(!eggManager.isActive());
 
-        // TODO Print success message
+        if (eggManager.isActive()) {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.toggle.enabled", ColorConstants.SUCCESS)));
+        } else {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.toggle.disabled", ColorConstants.ERROR)));
+        }
 
         return true;
     }
