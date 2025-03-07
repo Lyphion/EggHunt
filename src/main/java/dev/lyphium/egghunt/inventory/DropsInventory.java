@@ -143,10 +143,6 @@ public final class DropsInventory implements InventoryHolder {
         return OneOf.ofFirst(item);
     }
 
-    public void addDrop(@NotNull EasterEggDrop drop) {
-
-    }
-
     public @Nullable ItemStack removeDrop(int slot) {
         ItemStack item = inventory.getItem(slot);
         if (item == null || slot < 0 || slot >= PAGE_SIZE)

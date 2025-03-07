@@ -82,10 +82,7 @@ public final class InventoryListener implements Listener {
                 return;
             }
 
-            // Check if new item should be added
             if (slot >= inv.getSize()) {
-                // TODO Open Settings window
-                // dropsInventory.addDrop(item);
                 return;
             }
 
@@ -117,5 +114,4 @@ public final class InventoryListener implements Listener {
             }
         }
     }
-
 }

@@ -1,6 +1,8 @@
 package dev.lyphium.egghunt;
 
 import dev.lyphium.egghunt.command.EggHuntCommand;
+import dev.lyphium.egghunt.inventory.DropsInventory;
+import dev.lyphium.egghunt.inventory.EasterEggInventory;
 import dev.lyphium.egghunt.listener.InventoryListener;
 import dev.lyphium.egghunt.listener.PlayerListener;
 import dev.lyphium.egghunt.manager.EggManager;
@@ -10,6 +12,8 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +53,10 @@ public final class EggHunt extends JavaPlugin {
     @Override
     public void onDisable() {
         statisticManager.saveStatistics();
+
+        Bukkit.getOnlinePlayers().stream()
+                .filter(p -> p.getOpenInventory().getTopInventory().getHolder() instanceof EasterEggInventory || p.getOpenInventory().getTopInventory().getHolder() instanceof DropsInventory)
+                .forEach(HumanEntity::closeInventory);
 
         getLogger().info("Plugin deactivated");
     }

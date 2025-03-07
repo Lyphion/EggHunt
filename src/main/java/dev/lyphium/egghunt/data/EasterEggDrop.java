@@ -31,14 +31,14 @@ public final class EasterEggDrop {
         this.itemDrop = itemDrop;
         this.minimumAmount = minimumAmount;
         this.maximumAmount = maximumAmount;
-        this.weight = weight;
+        this.weight = Math.max(1, weight);
         this.commandDrop = null;
     }
 
     public EasterEggDrop(@NotNull String commandDrop, int weight) {
         this.itemDrop = null;
         this.minimumAmount = this.maximumAmount = 0;
-        this.weight = weight;
+        this.weight = Math.max(1, weight);
         this.commandDrop = commandDrop;
     }
 

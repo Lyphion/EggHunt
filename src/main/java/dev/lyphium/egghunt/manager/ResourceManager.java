@@ -4,12 +4,14 @@ import dev.lyphium.egghunt.data.EasterEggDrop;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.sound.Sound;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -38,6 +40,8 @@ public final class ResourceManager {
     private int lifetime;
 
     private int leaderboardSize;
+
+    private BukkitTask saveTask;
 
     public ResourceManager(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
@@ -136,7 +140,7 @@ public final class ResourceManager {
 
             if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
                     && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, Math.max(weight, 1)));
+                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, weight));
             }
         }
 
@@ -150,10 +154,14 @@ public final class ResourceManager {
             final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
 
             if (commandData instanceof String command && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(command, Math.max(weight, 1)));
+                drops.add(new EasterEggDrop(command, weight));
             }
         }
 
+        updateDrops();
+    }
+
+    public void updateDrops() {
         // Sort drops by weight
         drops.sort(Comparator.comparingInt(EasterEggDrop::getWeight).reversed());
 
@@ -162,6 +170,15 @@ public final class ResourceManager {
     }
 
     public void saveResources() {
+        if (saveTask != null)
+            saveTask.cancel();
+
+        // Delay saving, if multiple edits are made
+        // Run saving asynchronously
+        saveTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::saveResourceHandle, 20 * 5);
+    }
+
+    private void saveResourceHandle() {
         final FileConfiguration eggsConfig = new YamlConfiguration();
         final FileConfiguration dropsConfig = new YamlConfiguration();
 
