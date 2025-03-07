@@ -26,6 +26,7 @@ public final class InventoryListener implements Listener {
         final int slot = event.getRawSlot();
         final ItemStack item = event.getCurrentItem();
 
+        // Check for eggs overview inventory
         if (inv.getHolder() instanceof EasterEggInventory eggInventory) {
             event.setCancelled(true);
 
@@ -47,9 +48,11 @@ public final class InventoryListener implements Listener {
 
             // Check if item should be removed
             if (event.getClick().isKeyboardClick()) {
+                // Only allow "drop"
                 if (event.getClick() != ClickType.CONTROL_DROP && event.getClick() != ClickType.DROP)
                     return;
 
+                // Remove egg from pool and give item to player
                 final ItemStack removedItem = eggInventory.removeEgg(slot);
                 if (removedItem != null)
                     human.getInventory().addItem(removedItem);
@@ -59,6 +62,7 @@ public final class InventoryListener implements Listener {
 
             // Check if item is requested
             if (event.isLeftClick()) {
+                // Get egg from pool and give item to player
                 final ItemStack eggItem = eggInventory.getEgg(slot);
 
                 if (eggItem != null)
@@ -69,6 +73,7 @@ public final class InventoryListener implements Listener {
             return;
         }
 
+        // Check for drops overview inventory
         if (inv.getHolder() instanceof DropsInventory dropsInventory) {
             event.setCancelled(true);
 
@@ -82,15 +87,17 @@ public final class InventoryListener implements Listener {
                 return;
             }
 
-            if (slot >= inv.getSize()) {
+            // Ignore click in main inventory
+            if (slot >= inv.getSize())
                 return;
-            }
 
             // Check if item should be removed
             if (event.getClick().isKeyboardClick()) {
+                // Only allow "drop"
                 if (event.getClick() != ClickType.CONTROL_DROP && event.getClick() != ClickType.DROP)
                     return;
 
+                // Remove drop from pool and give item to player
                 final ItemStack removedItem = dropsInventory.removeDrop(slot);
                 if (removedItem != null)
                     human.getInventory().addItem(removedItem);
@@ -100,14 +107,18 @@ public final class InventoryListener implements Listener {
 
             // Check if item is requested
             if (event.isLeftClick()) {
+                // Get drop from pool
                 final OneOf<ItemStack, String> drop = dropsInventory.getDrop(slot);
 
                 if (drop == null)
                     return;
 
+                // If drop is item, give it to the player
                 if (drop.getFirst() != null) {
                     human.getInventory().addItem(drop.getFirst());
-                } else if (human instanceof Player player) {
+                }
+                // Otherwise format command and run as console
+                else if (human instanceof Player player) {
                     final String formatCommand = EasterEggDrop.getFormatCommand(Objects.requireNonNull(drop.getSecond()), player);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatCommand);
                 }

@@ -33,9 +33,9 @@ public final class EggHuntReloadCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        if (args.length != 0) {
+        // Check if arguments have the right amount of members
+        if (args.length != 0)
             return false;
-        }
 
         try {
             eggManager.setActive(false);

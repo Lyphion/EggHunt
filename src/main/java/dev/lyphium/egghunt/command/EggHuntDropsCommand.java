@@ -32,31 +32,39 @@ public final class EggHuntDropsCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+        // This command can only be used by players
         if (!(sender instanceof Player player)) {
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
             return true;
         }
 
+        // Open overview if no other arguments are provided
         if (args.length == 0) {
             player.openInventory(new DropsInventory(resourceManager, player.locale()).getInventory());
             return true;
         }
 
+        // Check if arguments have the right amount of members
         if (args.length < 3)
             return false;
 
+        // Currently only adding is supported
         if (!args[0].equalsIgnoreCase("add"))
             return false;
 
+        // Check if an item should be added
         if (args[1].equalsIgnoreCase("item")) {
+            // Check if arguments have the right amount of members
             if (args.length != 5)
                 return false;
 
+            // Check if provided numbers are valid
             if (!args[2].matches("\\d+") || !args[3].matches("\\d+") || !args[4].matches("\\d+")) {
                 sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_format", ColorConstants.ERROR)));
                 return true;
             }
 
+            // Check if item in hand is valid
             final ItemStack item = player.getInventory().getItemInMainHand().asOne();
             if (item.getType() == Material.AIR) {
                 sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_item", ColorConstants.ERROR)));
@@ -66,6 +74,7 @@ public final class EggHuntDropsCommand implements SubCommand {
             final int minimum = Integer.parseUnsignedInt(args[2]);
             final int maximum = Integer.parseUnsignedInt(args[3]);
 
+            // Check if range is valid
             if (minimum > maximum) {
                 sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_range", ColorConstants.ERROR)));
                 return true;
@@ -73,6 +82,7 @@ public final class EggHuntDropsCommand implements SubCommand {
 
             final int weight = Integer.parseUnsignedInt(args[4]);
 
+            // Create and save drop
             final EasterEggDrop drop = new EasterEggDrop(item, minimum, maximum, weight);
             resourceManager.getDrops().add(drop);
             resourceManager.updateDrops();
@@ -80,14 +90,17 @@ public final class EggHuntDropsCommand implements SubCommand {
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
         } else if (args[1].equalsIgnoreCase("command")) {
+            // Check if arguments have the right amount of members
             if (args.length < 4)
                 return false;
 
+            // Check if provided number are valid
             if (!args[args.length - 1].matches("\\d+")) {
                 sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.wrong_format", ColorConstants.ERROR)));
                 return true;
             }
 
+            // Build string from parts
             final String[] commandParts = Arrays.copyOfRange(args, 2, args.length - 1);
             String command = String.join(" ", commandParts);
             if (command.startsWith("\"")) {
@@ -98,6 +111,7 @@ public final class EggHuntDropsCommand implements SubCommand {
 
             final int weight = Integer.parseUnsignedInt(args[args.length - 1]);
 
+            // Create and save drop
             final EasterEggDrop drop = new EasterEggDrop(command, weight);
             resourceManager.getDrops().add(drop);
             resourceManager.updateDrops();

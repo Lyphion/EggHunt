@@ -28,15 +28,17 @@ public final class EggHuntSpawnCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+        // This command can only be used by players if no arguments are provided
         if (!(sender instanceof Player) && args.length != 1) {
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
             return false;
         }
 
-        if (args.length > 1) {
+        // Check if arguments have the right amount of members
+        if (args.length > 1)
             return false;
-        }
 
+        // Get target player, either self or provided one
         final Player target;
         if (args.length == 0) {
             target = (Player) sender;

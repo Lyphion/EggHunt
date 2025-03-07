@@ -21,12 +21,13 @@ public final class EggHuntHelpCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        if (args.length > 0) {
+        // Check if arguments have the right amount of members
+        if (args.length > 0)
             return false;
-        }
 
         sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.help.menu", ColorConstants.DEFAULT)));
 
+        // Format all sub commands, and filter with missing permission
         for (final Map.Entry<String, SubCommand> entry : parent.getSubCommands().entrySet()) {
             if (entry.getValue().getMinimumPermission() != null && !sender.hasPermission(entry.getValue().getMinimumPermission()))
                 continue;

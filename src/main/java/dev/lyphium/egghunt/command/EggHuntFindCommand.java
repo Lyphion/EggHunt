@@ -29,21 +29,24 @@ public final class EggHuntFindCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+        // This command can only be used by players
         if (!(sender instanceof Player player)) {
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
             return true;
         }
 
-        if (args.length != 0) {
+        // Check if arguments have the right amount of members
+        if (args.length != 0)
             return false;
-        }
 
+        // Find all nearby eggs
         int range = resourceManager.getMaximumRange();
         final List<Item> items = player.getWorld().getNearbyEntitiesByType(Item.class, player.getLocation(), range)
                 .stream()
                 .filter(i -> i.getItemStack().getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY))
                 .toList();
 
+        // Spawn particle above eggs
         for (final Item item : items) {
             player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
         }

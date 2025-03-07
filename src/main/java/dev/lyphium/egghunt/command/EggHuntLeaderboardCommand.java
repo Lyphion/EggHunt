@@ -34,15 +34,18 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        if (args.length != 0) {
+        // Check if arguments have the right amount of members
+        if (args.length != 0)
             return false;
-        }
 
+        // Leaderboard is calculated async to relax main thread
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            // Get leaderboard
             final List<Tuple<String, Integer>> leaderboard = statisticManager.getLeaderboard(resourceManager.getLeaderboardSize());
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.leaderboard.menu", ColorConstants.DEFAULT)));
 
+            // Send top players
             for (int i = 0; i < leaderboard.size(); i++) {
                 final Tuple<String, Integer> statistic = leaderboard.get(i);
 
@@ -58,6 +61,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
                 sender.sendMessage(builder.build());
             }
 
+            // If player is not contained, extend the leaderboard
             if (sender instanceof Player player && leaderboard.stream().noneMatch(s -> s.getA().equals(sender.getName()))) {
                 final Tuple<Integer, Integer> statistic = statisticManager.getStatistic(player);
 

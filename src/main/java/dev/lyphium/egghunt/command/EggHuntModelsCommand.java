@@ -27,14 +27,15 @@ public final class EggHuntModelsCommand implements SubCommand {
 
     @Override
     public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
+        // This command can only be used by players
         if (!(sender instanceof Player player)) {
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
             return true;
         }
 
-        if (args.length != 0) {
+        // Check if arguments have the right amount of members
+        if (args.length != 0)
             return false;
-        }
 
         player.openInventory(new EasterEggInventory(resourceManager, player.locale()).getInventory());
         return true;
