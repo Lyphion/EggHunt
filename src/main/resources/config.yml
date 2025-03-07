@@ -6,7 +6,9 @@ Spawn:
     Minimum: 00:15:00
     Maximum: 00:30:00
   Lifetime: 00:05:00
-Leaderboard: 3
+Statistic:
+  Leaderboard: 5
+  Firework: 100
 Sound:
   Spawn:
     Id: minecraft:block.sniffer_egg.plop
@@ -14,7 +16,12 @@ Sound:
     Volume: 1.0
     Pitch: 1.0
   Open:
-    Id: minecraft:bock.sniffer_egg.hatch
+    Id: minecraft:bock.sniffer_egg.crack
+    Source: neutral
+    Volume: 1.0
+    Pitch: 1.0
+  Leaderboard:
+    Id: minecraft:entity.firework_rocket.twinkle_far
     Source: neutral
     Volume: 1.0
     Pitch: 1.0

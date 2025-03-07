@@ -34,13 +34,13 @@ public final class ResourceManager {
     private int totalWeight;
     private final List<EasterEggDrop> drops = new ArrayList<>();
 
-    private Sound spawnSound, openSound;
+    private Sound spawnSound, openSound, leaderboardSound;
 
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
     private int lifetime;
 
-    private int leaderboardSize;
+    private int leaderboardSize, fireworkFactor;
 
     private BukkitTask saveTask;
 
@@ -52,7 +52,7 @@ public final class ResourceManager {
         // Check if at least one item is registered
         if (totalWeight == 0)
             // Backup if no drops are registered
-            return new EasterEggDrop(new ItemStack(Material.EGG), 1, 1, 1);
+            return new EasterEggDrop(new ItemStack(Material.COOKIE), 1, 1, 1);
 
         int index = random.nextInt(totalWeight);
 
@@ -89,8 +89,9 @@ public final class ResourceManager {
         // Load lifetime
         lifetime = toSeconds(config.getString("Spawn.Lifetime", "00:05:00"));
 
-        // Load leaderboard setting
-        leaderboardSize = config.getInt("Leaderboard", 3);
+        // Load statistic settings
+        leaderboardSize = config.getInt("Statistic.Leaderboard", 5);
+        fireworkFactor = config.getInt("Statistic.Firework", 100);
 
         // Load sounds
         spawnSound = Sound.sound(
@@ -105,6 +106,13 @@ public final class ResourceManager {
                 Sound.Source.NAMES.valueOr(config.getString("Sound.Open.Source", "neutral"), Sound.Source.NEUTRAL),
                 (float) config.getDouble("Sound.Open.Volume"),
                 (float) config.getDouble("Sound.Open.Pitch")
+        );
+
+        leaderboardSound = Sound.sound(
+                Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Leaderboard.Id", "minecraft:entity.firework_rocket.blast"))),
+                Sound.Source.NAMES.valueOr(config.getString("Sound.Leaderboard.Source", "neutral"), Sound.Source.NEUTRAL),
+                (float) config.getDouble("Sound.Leaderboard.Volume"),
+                (float) config.getDouble("Sound.Leaderboard.Pitch")
         );
 
         validBlocks.clear();

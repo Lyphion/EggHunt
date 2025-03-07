@@ -19,8 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Main command for managing the plugin.
+ */
 public final class EggHuntCommand implements CommandExecutor, TabCompleter {
 
+    /**
+     * Collection of all available sub commands.
+     */
     @Getter(AccessLevel.PACKAGE)
     private final Map<String, SubCommand> subCommands;
 
@@ -69,7 +75,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
         final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
         final boolean success = subCommand.handleCommand(sender, remaining);
 
-        // If something bad happened, print error message
+        // If something bad happened, print error/help message for command
         if (!success) {
             sender.sendMessage(errorMessage(sender, name));
         }
@@ -81,6 +87,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         final String name = args[0].toLowerCase();
 
+        // Find matching subcommands
         if (args.length == 1) {
             return subCommands.entrySet()
                     .stream()
@@ -95,16 +102,29 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
             return List.of();
         }
 
+        // Get completion from sub command
         final SubCommand subCommand = subCommands.get(name);
         final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
         return subCommand.handleTabComplete(sender, remaining);
     }
 
+    /**
+     * Set this object as an executor and tab completer for the command
+     *
+     * @param command Command to be handled.
+     */
     public void register(@NotNull PluginCommand command) {
         command.setExecutor(this);
         command.setTabCompleter(this);
     }
 
+    /**
+     * Get error/help message for the command.
+     *
+     * @param sender Sender of the command
+     * @param label  Used label of the command
+     * @return Component with formated message.
+     */
     private Component errorMessage(@NotNull CommandSender sender, @NotNull String label) {
         final String name = label.toLowerCase();
         final String key = sender.hasPermission(PermissionConstants.ADMIN) && !name.equals("help")

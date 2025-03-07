@@ -50,8 +50,13 @@ public final class EggHuntSpawnCommand implements SubCommand {
             }
         }
 
-        eggManager.spawn(target.getLocation());
-        sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.success", ColorConstants.SUCCESS)));
+        final boolean success = eggManager.spawn(target.getLocation());
+
+        if (success) {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.success", ColorConstants.SUCCESS)));
+        } else {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.failure", ColorConstants.WARNING)));
+        }
 
         return true;
     }

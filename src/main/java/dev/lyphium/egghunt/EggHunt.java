@@ -4,7 +4,7 @@ import dev.lyphium.egghunt.command.EggHuntCommand;
 import dev.lyphium.egghunt.inventory.DropsInventory;
 import dev.lyphium.egghunt.inventory.EasterEggInventory;
 import dev.lyphium.egghunt.listener.InventoryListener;
-import dev.lyphium.egghunt.listener.PlayerListener;
+import dev.lyphium.egghunt.listener.EntityListener;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
@@ -82,7 +82,7 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new PlayerListener(resourceManager, statisticManager), this);
+        getServer().getPluginManager().registerEvents(new EntityListener(resourceManager, statisticManager), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(), this);
     }
 

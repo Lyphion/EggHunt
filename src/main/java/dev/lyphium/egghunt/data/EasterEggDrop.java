@@ -61,7 +61,6 @@ public final class EasterEggDrop {
         this.commandDrop = null;
     }
 
-
     /**
      * Create a new Easter egg drop with a server command.
      *

@@ -52,40 +52,58 @@ public final class EggHuntDropsCommand implements SubCommand {
             if (args.length != 5)
                 return false;
 
-            if (!args[2].matches("\\d+") || !args[3].matches("\\d+") || !args[4].matches("\\d+"))
-                return false;
+            if (!args[2].matches("\\d+") || !args[3].matches("\\d+") || !args[4].matches("\\d+")) {
+                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_format", ColorConstants.ERROR)));
+                return true;
+            }
 
             final ItemStack item = player.getInventory().getItemInMainHand().asOne();
-            if (item.getType() == Material.AIR)
-                return false;
+            if (item.getType() == Material.AIR) {
+                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_item", ColorConstants.ERROR)));
+                return true;
+            }
 
             final int minimum = Integer.parseUnsignedInt(args[2]);
             final int maximum = Integer.parseUnsignedInt(args[3]);
+
+            if (minimum > maximum) {
+                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_range", ColorConstants.ERROR)));
+                return true;
+            }
+
             final int weight = Integer.parseUnsignedInt(args[4]);
 
             final EasterEggDrop drop = new EasterEggDrop(item, minimum, maximum, weight);
             resourceManager.getDrops().add(drop);
             resourceManager.updateDrops();
             resourceManager.saveResources();
+
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
         } else if (args[1].equalsIgnoreCase("command")) {
             if (args.length < 4)
                 return false;
 
-            if (!args[args.length - 1].matches("\\d+"))
-                return false;
+            if (!args[args.length - 1].matches("\\d+")) {
+                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.wrong_format", ColorConstants.ERROR)));
+                return true;
+            }
 
-            final int weight = Integer.parseUnsignedInt(args[args.length - 1]);
             final String[] commandParts = Arrays.copyOfRange(args, 2, args.length - 1);
             String command = String.join(" ", commandParts);
-            if (command.startsWith("\""))
+            if (command.startsWith("\"")) {
                 command = command.substring(1);
-            if (command.endsWith("\""))
-                command = command.substring(0, command.length() - 1);
+                if (command.endsWith("\""))
+                    command = command.substring(0, command.length() - 1);
+            }
+
+            final int weight = Integer.parseUnsignedInt(args[args.length - 1]);
 
             final EasterEggDrop drop = new EasterEggDrop(command, weight);
             resourceManager.getDrops().add(drop);
             resourceManager.updateDrops();
             resourceManager.saveResources();
+
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
         } else {
             return false;
         }

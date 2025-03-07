@@ -54,11 +54,10 @@ public final class EggManager {
         this.active = active;
     }
 
-    public void spawn(@NotNull Location location) {
+    public boolean spawn(@NotNull Location location) {
         final Location spawn = findSpawnLocation(location);
-
         if (spawn == null)
-            return;
+            return false;
 
         final ItemStack item;
         if (resourceManager.getEggs().isEmpty()) {
@@ -108,6 +107,8 @@ public final class EggManager {
             final String format = Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", player.locale())).format(null);
             player.sendActionBar(MiniMessage.miniMessage().deserialize(format));
         }
+
+        return true;
     }
 
     public void resetSpawnTimer(@NotNull UUID uuid) {
@@ -164,6 +165,9 @@ public final class EggManager {
                 }
             }
         }
+
+        if (locations.isEmpty())
+            return null;
 
         return locations.get(random.nextInt(locations.size()));
     }
