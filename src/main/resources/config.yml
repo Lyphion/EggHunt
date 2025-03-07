@@ -3,7 +3,7 @@ Spawn:
   Range:
     Minimum: 10
     Maximum: 50
-  # Duration between an Easter egg will spawn per player
+  # Duration between spawning of Easter eggs per player
   Duration:
     Minimum: 00:15:00
     Maximum: 00:30:00
@@ -17,7 +17,7 @@ Statistic:
   Milestone: 100
 
 Sound:
-  # Sound played when an Easter spawns
+  # Sound played when an Easter egg spawns
   Spawn:
     Id: minecraft:block.sniffer_egg.plop
     Source: neutral
