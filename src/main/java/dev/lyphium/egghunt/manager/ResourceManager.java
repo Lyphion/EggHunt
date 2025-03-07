@@ -21,6 +21,7 @@ import java.util.*;
 @Getter
 public final class ResourceManager {
 
+    public static final int SAVE_DELAY = 20 * 5;
     @Getter(AccessLevel.NONE)
     private final JavaPlugin plugin;
     @Getter(AccessLevel.NONE)
@@ -175,7 +176,7 @@ public final class ResourceManager {
 
         // Delay saving, if multiple edits are made
         // Run saving asynchronously
-        saveTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::saveResourceHandle, 20 * 5);
+        saveTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::saveResourceHandle, SAVE_DELAY);
     }
 
     private void saveResourceHandle() {

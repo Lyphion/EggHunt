@@ -22,6 +22,8 @@ public final class StatisticManager {
             .comparingInt((Map.Entry<UUID, Integer> e) -> -e.getValue())
             .thenComparing(Map.Entry::getKey);
 
+    public static final int SAVE_PERIOD = 60 * 20;
+
     private final JavaPlugin plugin;
 
     private final Map<UUID, Integer> statistics = new ConcurrentHashMap<>();
@@ -30,7 +32,7 @@ public final class StatisticManager {
     public StatisticManager(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveStatistics, 60 * 20, 60 * 20);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveStatistics, SAVE_PERIOD, SAVE_PERIOD);
     }
 
     public int addPoints(@NotNull Player player, int points) {
