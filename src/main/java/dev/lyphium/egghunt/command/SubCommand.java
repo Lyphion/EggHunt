@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface SubCommand {
 
-    default String getMinimumPermission() {
-        return "";
+    default @Nullable String getMinimumPermission() {
+        return null;
     }
 
     boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args);

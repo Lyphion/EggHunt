@@ -34,7 +34,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
                 "drops", new EggHuntDropsCommand(resourceManager),
                 "find", new EggHuntFindCommand(resourceManager),
                 "help", new EggHuntHelpCommand(this),
-                "leaderboard", new EggHuntLeaderboardCommand(plugin, statisticManager),
+                "leaderboard", new EggHuntLeaderboardCommand(plugin, resourceManager, statisticManager),
                 "models", new EggHuntModelsCommand(resourceManager),
                 "reload", new EggHuntReloadCommand(resourceManager, eggManager),
                 "spawn", new EggHuntSpawnCommand(eggManager),
@@ -60,9 +60,9 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
         final SubCommand subCommand = subCommands.get(name);
 
         // Check if user has permission
-        if (!sender.hasPermission(subCommand.getMinimumPermission())) {
+        if (subCommand.getMinimumPermission() != null && !sender.hasPermission(subCommand.getMinimumPermission())) {
             sender.sendMessage(errorMessage(sender, "help"));
-            return false;
+            return true;
         }
 
         // Run subcommand
@@ -85,7 +85,7 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
             return subCommands.entrySet()
                     .stream()
                     .filter(s -> s.getKey().startsWith(name))
-                    .filter(s -> sender.hasPermission(s.getValue().getMinimumPermission()))
+                    .filter(s -> s.getValue().getMinimumPermission() == null || sender.hasPermission(s.getValue().getMinimumPermission()))
                     .map(Map.Entry::getKey)
                     .toList();
         }

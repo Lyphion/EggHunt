@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 public final class EggHuntHelpCommand implements SubCommand {
 
@@ -26,12 +27,15 @@ public final class EggHuntHelpCommand implements SubCommand {
 
         sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.help.menu", ColorConstants.DEFAULT)));
 
-        for (final String command : parent.getSubCommands().keySet()) {
+        for (final Map.Entry<String, SubCommand> entry : parent.getSubCommands().entrySet()) {
+            if (entry.getValue().getMinimumPermission() != null && !sender.hasPermission(entry.getValue().getMinimumPermission()))
+                continue;
+
             final TextComponent.Builder builder = Component.text()
                     .content("» ").color(ColorConstants.DEFAULT)
-                    .append(Component.text(command, ColorConstants.HIGHLIGHT).clickEvent(ClickEvent.suggestCommand("/egghunt " + command)))
+                    .append(Component.text(entry.getKey(), ColorConstants.HIGHLIGHT).clickEvent(ClickEvent.suggestCommand("/egghunt " + entry.getKey())))
                     .append(Component.text(": ", ColorConstants.DEFAULT))
-                    .append(Component.translatable("command.egghunt." + command + ".description", ColorConstants.WHITE));
+                    .append(Component.translatable("command.egghunt." + entry.getKey() + ".description", ColorConstants.WHITE));
 
             sender.sendMessage(builder.build());
         }
@@ -40,7 +44,7 @@ public final class EggHuntHelpCommand implements SubCommand {
     }
 
     @Override
-    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull[] args) {
+    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
         return List.of();
     }
 }
