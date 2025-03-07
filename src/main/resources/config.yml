@@ -1,30 +1,42 @@
 Spawn:
+  # Range around a player where an Easter egg may spawn
   Range:
     Minimum: 10
     Maximum: 50
+  # Duration between an Easter egg will spawn per player
   Duration:
     Minimum: 00:15:00
     Maximum: 00:30:00
+  # Despawn time of an Easter egg
   Lifetime: 00:05:00
+
 Statistic:
+  # Amount of players in the leaderboard
   Leaderboard: 5
-  Firework: 100
+  # Collecting a multiple of this generates firework and message
+  Milestone: 100
+
 Sound:
+  # Sound played when an Easter spawns
   Spawn:
     Id: minecraft:block.sniffer_egg.plop
     Source: neutral
     Volume: 1.0
     Pitch: 1.0
+  # Sound played when opening an Easter egg
   Open:
     Id: minecraft:bock.sniffer_egg.crack
     Source: neutral
     Volume: 1.0
     Pitch: 1.0
+  # Sound played when first place is reached
   Leaderboard:
     Id: minecraft:entity.firework_rocket.twinkle_far
     Source: neutral
     Volume: 1.0
     Pitch: 1.0
+
+# Valid blocks for egg spawning
 Locations:
   - minecraft:allium
   - minecraft:azure_bluet

@@ -70,7 +70,7 @@ public final class EntityListener implements Listener {
         boolean shootFirework = false;
 
         // Check if egg count crossed milestone
-        if (count % resourceManager.getFireworkFactor() == 0) {
+        if (count % resourceManager.getMilestone() == 0) {
             shootFirework = true;
 
             // Notify all player

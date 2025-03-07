@@ -43,7 +43,7 @@ public final class ResourceManager {
     private int minimumDuration, maximumDuration;
     private int lifetime;
 
-    private int leaderboardSize, fireworkFactor;
+    private int leaderboardSize, milestone;
 
     private BukkitTask saveTask;
 
@@ -103,7 +103,7 @@ public final class ResourceManager {
 
         // Load statistic settings
         leaderboardSize = config.getInt("Statistic.Leaderboard", 5);
-        fireworkFactor = config.getInt("Statistic.Firework", 100);
+        milestone = config.getInt("Statistic.Milestone", 100);
 
         // Load sounds
         spawnSound = Sound.sound(
