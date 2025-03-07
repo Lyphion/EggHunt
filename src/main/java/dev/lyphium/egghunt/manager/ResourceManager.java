@@ -21,14 +21,17 @@ import java.util.*;
 @Getter
 public final class ResourceManager {
 
-    public static final int SAVE_DELAY = 20 * 5;
+    /**
+     * Saving delay.
+     */
+    public static final int SAVE_DELAY = 20 * 2;
+
     @Getter(AccessLevel.NONE)
     private final JavaPlugin plugin;
     @Getter(AccessLevel.NONE)
     private final Random random = new Random(System.currentTimeMillis());
 
     private final Set<Material> validBlocks = new HashSet<>();
-
     private final List<ItemStack> eggs = new ArrayList<>();
 
     private int totalWeight;
@@ -48,6 +51,11 @@ public final class ResourceManager {
         this.plugin = plugin;
     }
 
+    /**
+     * Get random drop.
+     *
+     * @return Random drop from pool.
+     */
     public @NotNull EasterEggDrop getRandomDrop() {
         // Check if at least one item is registered
         if (totalWeight == 0)
@@ -56,6 +64,7 @@ public final class ResourceManager {
 
         int index = random.nextInt(totalWeight);
 
+        // Find drop where the index is smaller the weight
         for (final EasterEggDrop drop : drops) {
             if (index < drop.getWeight()) {
                 return drop;
@@ -68,6 +77,9 @@ public final class ResourceManager {
         throw new IllegalStateException("No drop found");
     }
 
+    /**
+     * Load all resources, including main config, eggs and drops from files.
+     */
     public void loadResources() {
         // Save default config
         plugin.saveDefaultConfig();
@@ -170,6 +182,9 @@ public final class ResourceManager {
         updateDrops();
     }
 
+    /**
+     * Recalculate the total weighting and sorting of the drops.
+     */
     public void updateDrops() {
         // Sort drops by weight
         drops.sort(Comparator.comparingInt(EasterEggDrop::getWeight).reversed());
@@ -178,6 +193,9 @@ public final class ResourceManager {
         totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
     }
 
+    /**
+     * Save resources to file. The action is done in the background, after small waiting time to enable additional edits.
+     */
     public void saveResources() {
         if (saveTask != null)
             saveTask.cancel();
@@ -187,6 +205,9 @@ public final class ResourceManager {
         saveTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::saveResourceHandle, SAVE_DELAY);
     }
 
+    /**
+     * Save eggs and drops to file.
+     */
     private void saveResourceHandle() {
         final FileConfiguration eggsConfig = new YamlConfiguration();
         final FileConfiguration dropsConfig = new YamlConfiguration();
@@ -229,6 +250,12 @@ public final class ResourceManager {
         }
     }
 
+    /**
+     * Convert time string "hh:mm:ss" to seconds.
+     *
+     * @param time String from which the time should be extracted
+     * @return Duration in seconds.
+     */
     private int toSeconds(@NotNull String time) {
         final String[] parts = time.split(":");
         int seconds = 0;
@@ -243,6 +270,12 @@ public final class ResourceManager {
         return seconds;
     }
 
+    /**
+     * Load config from file.
+     *
+     * @param path Path of the config
+     * @return Loaded config of the file.
+     */
     private @NotNull FileConfiguration loadConfig(@NotNull String path) {
         // Save default config
         final File file = new File(plugin.getDataFolder(), path);
