@@ -37,6 +37,8 @@ public final class ResourceManager {
     private int minimumDuration, maximumDuration;
     private int lifetime;
 
+    private int leaderboardSize;
+
     public ResourceManager(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
     }
@@ -81,6 +83,9 @@ public final class ResourceManager {
 
         // Load lifetime
         lifetime = toSeconds(config.getString("Spawn.Lifetime", "00:05:00"));
+
+        // Load leaderboard setting
+        leaderboardSize = config.getInt("Leaderboard", 3);
 
         // Load sounds
         spawnSound = Sound.sound(

@@ -6,6 +6,7 @@ Spawn:
     Minimum: 00:15:00
     Maximum: 00:30:00
   Lifetime: 00:05:00
+Leaderboard: 3
 Sound:
   Spawn:
     Id: minecraft:block.sniffer_egg.plop

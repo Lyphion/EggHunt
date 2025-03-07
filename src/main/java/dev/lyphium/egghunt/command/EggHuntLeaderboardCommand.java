@@ -1,5 +1,6 @@
 package dev.lyphium.egghunt.command;
 
+import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.TextConstants;
@@ -16,13 +17,18 @@ import java.util.List;
 
 public final class EggHuntLeaderboardCommand implements SubCommand {
 
-    public static final int TOP_COUNT = 10;
-
     private final JavaPlugin plugin;
+
+    private final ResourceManager resourceManager;
     private final StatisticManager statisticManager;
 
-    public EggHuntLeaderboardCommand(@NotNull JavaPlugin plugin, @NotNull StatisticManager statisticManager) {
+    public EggHuntLeaderboardCommand(
+            @NotNull JavaPlugin plugin,
+            @NotNull ResourceManager resourceManager,
+            @NotNull StatisticManager statisticManager
+    ) {
         this.plugin = plugin;
+        this.resourceManager = resourceManager;
         this.statisticManager = statisticManager;
     }
 
@@ -33,7 +39,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
         }
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            final List<Tuple<String, Integer>> leaderboard = statisticManager.getLeaderboard(TOP_COUNT);
+            final List<Tuple<String, Integer>> leaderboard = statisticManager.getLeaderboard(resourceManager.getLeaderboardSize());
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.leaderboard.menu", ColorConstants.DEFAULT)));
 
