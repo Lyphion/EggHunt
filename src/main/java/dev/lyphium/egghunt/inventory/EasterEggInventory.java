@@ -34,10 +34,7 @@ public final class EasterEggInventory implements InventoryHolder {
 
     private int page;
 
-    public EasterEggInventory(
-            @NotNull ResourceManager resourceManager,
-            @NotNull Locale locale
-    ) {
+    public EasterEggInventory(@NotNull ResourceManager resourceManager, @NotNull Locale locale) {
         this.resourceManager = resourceManager;
         this.locale = locale;
         this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("inventory.eggs.title", ColorConstants.ERROR));
@@ -69,7 +66,7 @@ public final class EasterEggInventory implements InventoryHolder {
             final ItemStack item = eggs.get(i).clone();
 
             item.editMeta(meta -> {
-                final List<Component> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.lore())) : new ArrayList<>();
+                final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
 
                 if (!lore.isEmpty())
                     lore.add(Component.empty());
@@ -115,7 +112,7 @@ public final class EasterEggInventory implements InventoryHolder {
             final PersistentDataContainer container = meta.getPersistentDataContainer();
             container.remove(NamespacedKeyConstants.EASTER_EGG_KEY);
 
-            final List<Component> lore = meta.hasLore() ? new ArrayList<>(Objects.requireNonNull(meta.lore())) : new ArrayList<>();
+            final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
 
             lore.remove(EggManager.USAGE_DESCRIPTION);
             if (!lore.isEmpty() && lore.getLast().equals(Component.empty()))

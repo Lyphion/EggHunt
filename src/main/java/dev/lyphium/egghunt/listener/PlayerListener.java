@@ -20,7 +20,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 public final class PlayerListener implements Listener {
@@ -97,37 +96,8 @@ public final class PlayerListener implements Listener {
         }
 
         if (drop.getCommandDrop() != null) {
-            /*
-             * Values to replace
-             * @p -> Player opening the egg
-             * @r -> Random online player
-             * @n -> Nearest other player
-             */
-
-            final List<? extends Player> players = Bukkit.getOnlinePlayers().stream().toList();
-            final Player random = players.get(this.random.nextInt(players.size()));
-
-            Player target = player;
-            if (players.size() > 1) {
-                double distanceSquared = Double.MAX_VALUE;
-                for (final Player other : players) {
-                    if (other == player)
-                        continue;
-
-                    double temp = other.getLocation().distanceSquared(location);
-                    if (temp < distanceSquared) {
-                        target = other;
-                        distanceSquared = temp;
-                    }
-                }
-            }
-
-            final String command = drop.getCommandDrop()
-                    .replace(" @p ", ' ' + player.getName() + ' ')
-                    .replace(" @r ", ' ' + random.getName() + ' ')
-                    .replace(" @n ", ' ' + target.getName() + ' ');
-
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+            final String formatCommand = EasterEggDrop.getFormatCommand(drop.getCommandDrop(), player);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatCommand);
         }
     }
 }

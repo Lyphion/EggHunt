@@ -1,12 +1,21 @@
 package dev.lyphium.egghunt.data;
 
 import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
 @Getter
 public final class EasterEggDrop {
+
+    private final UUID uuid = UUID.randomUUID();
 
     @Nullable
     private final ItemStack itemDrop;
@@ -31,5 +40,40 @@ public final class EasterEggDrop {
         this.minimumAmount = this.maximumAmount = 0;
         this.weight = weight;
         this.commandDrop = commandDrop;
+    }
+
+    public static String getFormatCommand(@NotNull String command, @NotNull Player player) {
+        final Random random = new Random();
+        final List<? extends Player> players = Bukkit.getOnlinePlayers().stream().toList();
+        final Player randomPlayer = players.get(random.nextInt(players.size()));
+
+        Player target = player;
+        if (players.size() > 1) {
+            final Location location = player.getLocation();
+
+            double distanceSquared = Double.MAX_VALUE;
+            for (final Player other : players) {
+                if (other == player)
+                    continue;
+
+                double temp = other.getLocation().distanceSquared(location);
+                if (temp < distanceSquared) {
+                    target = other;
+                    distanceSquared = temp;
+                }
+            }
+        }
+
+        /*
+         * Values to replace
+         * @p -> Player opening the egg
+         * @r -> Random online player
+         * @n -> Nearest other player
+         */
+
+        return command
+                .replace(" @p ", ' ' + player.getName() + ' ')
+                .replace(" @r ", ' ' + randomPlayer.getName() + ' ')
+                .replace(" @n ", ' ' + target.getName() + ' ');
     }
 }
