@@ -24,15 +24,9 @@ import java.util.logging.Logger;
 
 public final class EggHunt extends JavaPlugin {
 
-    private static EggHunt instance;
-
     private ResourceManager resourceManager;
     private EggManager eggManager;
     private StatisticManager statisticManager;
-
-    public EggHunt() {
-        instance = this;
-    }
 
     @Override
     public void onEnable() {
@@ -84,9 +78,5 @@ public final class EggHunt extends JavaPlugin {
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new EntityListener(resourceManager, statisticManager), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(), this);
-    }
-
-    public static @NotNull Logger getPluginLogger() {
-        return instance.getLogger();
     }
 }

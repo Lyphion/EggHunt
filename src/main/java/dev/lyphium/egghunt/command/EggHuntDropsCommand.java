@@ -84,9 +84,7 @@ public final class EggHuntDropsCommand implements SubCommand {
 
             // Create and save drop
             final EasterEggDrop drop = new EasterEggDrop(item, minimum, maximum, weight);
-            resourceManager.getDrops().add(drop);
-            resourceManager.updateDrops();
-            resourceManager.saveResources();
+            resourceManager.addDrop(drop);
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
         } else if (args[1].equalsIgnoreCase("command")) {
@@ -113,9 +111,7 @@ public final class EggHuntDropsCommand implements SubCommand {
 
             // Create and save drop
             final EasterEggDrop drop = new EasterEggDrop(command, weight);
-            resourceManager.getDrops().add(drop);
-            resourceManager.updateDrops();
-            resourceManager.saveResources();
+            resourceManager.addDrop(drop);
 
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
         } else {

@@ -11,7 +11,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftItem;
@@ -77,14 +76,8 @@ public final class EggManager {
         if (spawn == null)
             return false;
 
-        // Get egg to spawn
-        final ItemStack item;
-        if (resourceManager.getEggs().isEmpty()) {
-            // Backup if no eggs are registered
-            item = new ItemStack(Material.EGG);
-        } else {
-            item = resourceManager.getEggs().get(random.nextInt(resourceManager.getEggs().size())).clone();
-        }
+        // Get random egg to spawn
+        final ItemStack item = resourceManager.getRandomEgg();
 
         // Mark egg as natural spawned Easter egg
         item.editMeta(meta -> {
@@ -207,7 +200,7 @@ public final class EggManager {
 
                     // Check if block is valid
                     final Block block = world.getBlockAt(x, y, z);
-                    if (!resourceManager.getValidBlocks().contains(block.getType()))
+                    if (!resourceManager.checkIfValidBlock(block.getType()))
                         continue;
 
                     // Add block to valid locations

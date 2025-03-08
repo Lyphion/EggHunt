@@ -202,8 +202,7 @@ public final class DropsInventory implements InventoryHolder {
         final UUID uuid = UUID.fromString(Objects.requireNonNull(id));
 
         // Remove drop with matching id
-        resourceManager.getDrops().removeIf(drop -> drop.getUuid().equals(uuid));
-        resourceManager.saveResources();
+        resourceManager.removeDrop(uuid);
         setupInventory();
 
         // If drop was command, return nothing

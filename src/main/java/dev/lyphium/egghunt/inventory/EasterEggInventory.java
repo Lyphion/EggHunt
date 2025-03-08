@@ -150,8 +150,7 @@ public final class EasterEggInventory implements InventoryHolder {
         });
 
         // Add egg
-        resourceManager.getEggs().add(item);
-        resourceManager.saveResources();
+        resourceManager.addEgg(item);
 
         setupInventory();
     }
@@ -178,8 +177,7 @@ public final class EasterEggInventory implements InventoryHolder {
         });
 
         // Remove egg
-        resourceManager.getEggs().remove(item);
-        resourceManager.saveResources();
+        resourceManager.removeEgg(item);
 
         setupInventory();
         return item;

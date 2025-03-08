@@ -52,6 +52,50 @@ public final class ResourceManager {
     }
 
     /**
+     * Get random Easter egg item from pool.
+     *
+     * @return Random Easter egg item.
+     */
+    public @NotNull ItemStack getRandomEgg() {
+        if (eggs.isEmpty()) {
+            // Backup if no eggs are registered
+            return new ItemStack(Material.EGG);
+        } else {
+            return eggs.get(random.nextInt(eggs.size())).clone();
+        }
+    }
+
+    /**
+     * Add a new Easter egg item to the pool.
+     *
+     * @param item Easter egg item to add
+     */
+    public void addEgg(@NotNull ItemStack item) {
+        eggs.add(item);
+        saveResources();
+    }
+
+    /**
+     * Remove an Easter egg item from the pool.
+     *
+     * @param item Easter egg item to add
+     */
+    public void removeEgg(@NotNull ItemStack item) {
+        eggs.remove(item);
+        saveResources();
+    }
+
+    /**
+     * Check if the provided material (block) is a valid spawn location.
+     *
+     * @param material Material (block) to check
+     * @return {@code true} if material is valid.
+     */
+    public boolean checkIfValidBlock(@NotNull Material material) {
+        return validBlocks.contains(material);
+    }
+
+    /**
      * Get random drop.
      *
      * @return Random drop from pool.
@@ -75,6 +119,38 @@ public final class ResourceManager {
 
         // Should never happen
         throw new IllegalStateException("No drop found");
+    }
+
+    /**
+     * Add a new drop to the pool.
+     *
+     * @param drop Drop to be added
+     */
+    public void addDrop(@NotNull EasterEggDrop drop) {
+        drops.add(drop);
+
+        // Sort drops by weight
+        drops.sort(Comparator.comparingInt(EasterEggDrop::getWeight).reversed());
+
+        // Calculate sum of all weight of all drops for drop change
+        totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
+
+        saveResources();
+    }
+
+    /**
+     * Remove drop by id from pool
+     *
+     * @param uuid Id of the drop
+     */
+    public void removeDrop(@NotNull UUID uuid) {
+        // Remove matching drop
+        drops.removeIf(drop -> drop.getUuid().equals(uuid));
+
+        // Calculate sum of all weight of all drops for drop change
+        totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
+
+        saveResources();
     }
 
     /**
@@ -127,9 +203,8 @@ public final class ResourceManager {
                 (float) config.getDouble("Sound.Leaderboard.Pitch")
         );
 
-        validBlocks.clear();
-
         // Load valid blocks for eggs
+        validBlocks.clear();
         for (final String materials : Objects.requireNonNull(config.getStringList("Locations"))) {
             final Material material = Material.matchMaterial(materials);
 
@@ -137,18 +212,16 @@ public final class ResourceManager {
                 validBlocks.add(material);
         }
 
-        eggs.clear();
-
         // Load Items for eggs
+        eggs.clear();
         for (final Object o : eggsConfig.getList("Eggs", List.of())) {
             if (o instanceof ItemStack item) {
                 eggs.add(item.asOne());
             }
         }
 
-        drops.clear();
-
         // Load Item drops from eggs
+        drops.clear();
         for (final Object o : dropsConfig.getList("Items", List.of())) {
             if (!(o instanceof Map<?, ?> map)) {
                 continue;
@@ -179,13 +252,6 @@ public final class ResourceManager {
             }
         }
 
-        updateDrops();
-    }
-
-    /**
-     * Recalculate the total weighting and sorting of the drops.
-     */
-    public void updateDrops() {
         // Sort drops by weight
         drops.sort(Comparator.comparingInt(EasterEggDrop::getWeight).reversed());
 
