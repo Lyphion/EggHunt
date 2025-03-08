@@ -131,6 +131,7 @@ public final class DropsInventory implements InventoryHolder {
                     // Add description on how to delete it
                     lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
                             .decoration(TextDecoration.ITALIC, false), locale));
+
                     meta.lore(lore);
                 });
 

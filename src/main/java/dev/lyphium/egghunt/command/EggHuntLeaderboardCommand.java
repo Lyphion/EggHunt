@@ -63,7 +63,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
 
             // If player is not contained, extend the leaderboard
             if (sender instanceof Player player && leaderboard.stream().noneMatch(s -> s.getA().equals(sender.getName()))) {
-                final Tuple<Integer, Integer> statistic = statisticManager.getStatistic(player);
+                final Tuple<Integer, Integer> statistic = statisticManager.getStatistic(player.getUniqueId());
 
                 if (statistic.getA() == -1)
                     return;

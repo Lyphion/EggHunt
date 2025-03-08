@@ -58,10 +58,10 @@ public final class EntityListener implements Listener {
         }
 
         // Get old rank of the player to compare it afterward.
-        final int oldRank = statisticManager.getStatistic(player).getA();
+        final int oldRank = statisticManager.getStatistic(player.getUniqueId()).getA();
 
         // Update statistic
-        final int count = statisticManager.addPoints(player, 1);
+        final int count = statisticManager.addPoints(player.getUniqueId(), 1);
 
         // Remove tag, with indicate a new egg
         container.remove(NamespacedKeyConstants.NATURAL_EGG_KEY);
@@ -79,7 +79,7 @@ public final class EntityListener implements Listener {
         }
 
         // Check if player reached rank 1
-        final int newRank = statisticManager.getStatistic(player).getA();
+        final int newRank = statisticManager.getStatistic(player.getUniqueId()).getA();
         if (newRank == 1 && oldRank != newRank) {
             shootFirework = true;
 

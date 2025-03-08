@@ -61,25 +61,25 @@ public final class StatisticManager {
     /**
      * Add points to a player.
      *
-     * @param player Player for which the points should be added
+     * @param uuid UUID of the player for whom the points should be added
      * @param points Amount of points to add
      * @return New amount of points.
      */
-    public int addPoints(@NotNull Player player, int points) {
+    public int addPoints(@NotNull UUID uuid, int points) {
         lock.writeLock().lock();
 
         try {
             // Update total points
-            final int total = statistics.merge(player.getUniqueId(), points, Integer::sum);
+            final int total = statistics.merge(uuid, points, Integer::sum);
             changed = true;
 
             // Remove old ranking entry (if exists)
-            final int oldIndex = Collections.binarySearch(ranking, new Tuple<>(player.getUniqueId(), total - points), COMPARATOR);
+            final int oldIndex = Collections.binarySearch(ranking, new Tuple<>(uuid, total - points), COMPARATOR);
             if (oldIndex >= 0)
                 ranking.remove(oldIndex);
 
             // Add new ranking entry
-            final Tuple<UUID, Integer> element = new Tuple<>(player.getUniqueId(), total);
+            final Tuple<UUID, Integer> element = new Tuple<>(uuid, total);
             final int newIndex = Collections.binarySearch(ranking, element, COMPARATOR);
             ranking.add(~newIndex, element);
 
@@ -92,22 +92,37 @@ public final class StatisticManager {
     /**
      * Get statistic of player as tuple of rank and points.
      *
-     * @param player Player for whom the statistic should be queried
+     * @param uuid UUID of the player from whom the statistics should be loaded
      * @return Statistic of the player.
      */
-    public @NotNull Tuple<Integer, Integer> getStatistic(@NotNull Player player) {
+    public @NotNull Tuple<Integer, Integer> getStatistic(@NotNull UUID uuid) {
         lock.readLock().lock();
 
         try {
-            int points = statistics.getOrDefault(player.getUniqueId(), 0);
+            int points = statistics.getOrDefault(uuid, 0);
 
             // If no points are scored -> no ranking
             if (points == 0)
                 return new Tuple<>(-1, 0);
 
             // Get ranking of player by the index in ranking
-            final int rank = Collections.binarySearch(ranking, new Tuple<>(player.getUniqueId(), points), COMPARATOR) + 1;
+            final int rank = Collections.binarySearch(ranking, new Tuple<>(uuid, points), COMPARATOR) + 1;
             return new Tuple<>(rank, points);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    /**
+     * Calculate the total amount of points for all players.
+     *
+     * @return Total amount of points.
+     */
+    public int getTotalPoints() {
+        lock.readLock().lock();
+
+        try {
+            return ranking.stream().mapToInt(Tuple::getB).sum();
         } finally {
             lock.readLock().unlock();
         }

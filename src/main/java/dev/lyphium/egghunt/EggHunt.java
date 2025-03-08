@@ -3,11 +3,12 @@ package dev.lyphium.egghunt;
 import dev.lyphium.egghunt.command.EggHuntCommand;
 import dev.lyphium.egghunt.inventory.DropsInventory;
 import dev.lyphium.egghunt.inventory.EasterEggInventory;
-import dev.lyphium.egghunt.listener.InventoryListener;
 import dev.lyphium.egghunt.listener.EntityListener;
+import dev.lyphium.egghunt.listener.InventoryListener;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
+import dev.lyphium.egghunt.util.EggHuntPlaceholderExpansion;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
@@ -15,12 +16,10 @@ import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 public final class EggHunt extends JavaPlugin {
 
@@ -36,6 +35,10 @@ public final class EggHunt extends JavaPlugin {
 
         resourceManager.loadResources();
         statisticManager.loadStatistics();
+
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new EggHuntPlaceholderExpansion(this, statisticManager).register();
+        }
 
         registerLanguages();
         registerCommands();
