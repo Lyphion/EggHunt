@@ -4,6 +4,10 @@
 
 With the **EggHunt** plugin the players on the server can go on a hunt to find hidden Easter eggs scattered around the world. These Easter eggs will spawn periodically nearby players. Each Easter egg contains a small drop/gift for the player. A leaderboard shows who collected the most Easter eggs. All Easter eggs and drops can be configured in game or via the config.
 
+Placeholders are exposed for the [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI):
+- `%egghunt_total_eggs%` (Total Easter eggs found by all players)
+- `%egghunt_player_eggs%` (Easter eggs found by a player)
+
 ## Configuration
 
 The plugin contains three configuration files: `config.yml`, `drops.yml` and `eggs.yml`; and one statistic file: `statistics.yml`.
@@ -23,7 +27,7 @@ After checking and configuring the main config an administrator with the `egghun
 The central command for this plugin is `egghunt`. For an overview of all available subcommand use `egghunt help`.
 
 The available drop can be viewed via `egghunt drops`. With the opened inventory the player can get a drop (left-click the item) or remove a drop (drop the item).
-Additional drops can be added with `egghunt drops add item <Minimum> <Maximum> <Weight>` or `egghung drops add command <Command> <Weight>`. For adding an item, hold it in the main hand.
+Additional drops can be added with `egghunt drops add item <Minimum> <Maximum> <Weight>` or `egghunt drops add command <Command> <Weight>`. For adding an item, hold it in the main hand.
 
 Similarly, Easter eggs can be viewed and removed with `egghunt models`. Adding a new item can be done inside the overview inventory by clicking on the desired item in the main inventory.
 
