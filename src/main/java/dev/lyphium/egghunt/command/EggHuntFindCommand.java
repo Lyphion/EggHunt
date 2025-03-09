@@ -43,7 +43,7 @@ public final class EggHuntFindCommand implements SubCommand {
         int range = resourceManager.getMaximumRange();
         final List<Item> items = player.getWorld().getNearbyEntitiesByType(Item.class, player.getLocation(), range)
                 .stream()
-                .filter(i -> i.getItemStack().getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY))
+                .filter(i -> i.getItemStack().hasItemMeta() && i.getItemStack().getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY))
                 .toList();
 
         // Spawn particle above eggs

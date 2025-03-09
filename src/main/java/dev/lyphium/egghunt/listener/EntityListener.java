@@ -44,9 +44,12 @@ public final class EntityListener implements Listener {
     @EventHandler
     private void onItemPickup(@NotNull EntityPickupItemEvent event) {
         final ItemStack item = event.getItem().getItemStack();
-        final ItemMeta itemMeta = item.getItemMeta();
+
+        if (!item.hasItemMeta())
+            return;
 
         // Check if item was an egg
+        final ItemMeta itemMeta = item.getItemMeta();
         final PersistentDataContainer container = itemMeta.getPersistentDataContainer();
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
             return;
@@ -115,9 +118,12 @@ public final class EntityListener implements Listener {
     @EventHandler
     private void onInventoryPickup(@NotNull InventoryPickupItemEvent event) {
         final ItemStack item = event.getItem().getItemStack();
-        final ItemMeta itemMeta = item.getItemMeta();
+
+        if (!item.hasItemMeta())
+            return;
 
         // Only player should be able to pick up egg
+        final ItemMeta itemMeta = item.getItemMeta();
         final PersistentDataContainer container = itemMeta.getPersistentDataContainer();
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
             return;
@@ -130,7 +136,7 @@ public final class EntityListener implements Listener {
         final ItemStack item = event.getItem();
 
         // We only care for eggs
-        if (item == null || !item.getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.EASTER_EGG_KEY))
+        if (item == null || !item.hasItemMeta() || !item.getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.EASTER_EGG_KEY))
             return;
 
         // Only left-click+shift is relevant, everything else should not work
