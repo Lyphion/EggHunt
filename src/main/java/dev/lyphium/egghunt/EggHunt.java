@@ -9,17 +9,11 @@ import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.EggHuntPlaceholderExpansion;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
-import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Locale;
 import java.util.Objects;
-import java.util.ResourceBundle;
 
 public final class EggHunt extends JavaPlugin {
 
@@ -40,7 +34,6 @@ public final class EggHunt extends JavaPlugin {
             new EggHuntPlaceholderExpansion(this, statisticManager).register();
         }
 
-        registerLanguages();
         registerCommands();
         registerListeners();
 
@@ -56,21 +49,6 @@ public final class EggHunt extends JavaPlugin {
                 .forEach(HumanEntity::closeInventory);
 
         getLogger().info("Plugin deactivated");
-    }
-
-    /**
-     * Register languages from language files.
-     */
-    private void registerLanguages() {
-        final TranslationRegistry registry = TranslationRegistry.create(Key.key("egghunt"));
-        registry.defaultLocale(Locale.ENGLISH);
-
-        ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
-        registry.registerAll(Locale.ENGLISH, bundle, true);
-        bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
-        registry.registerAll(Locale.GERMAN, bundle, true);
-
-        GlobalTranslator.translator().addSource(registry);
     }
 
     private void registerCommands() {

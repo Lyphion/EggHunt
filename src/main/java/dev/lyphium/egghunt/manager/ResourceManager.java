@@ -3,7 +3,11 @@ package dev.lyphium.egghunt.manager;
 import dev.lyphium.egghunt.data.EasterEggDrop;
 import lombok.AccessLevel;
 import lombok.Getter;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -46,6 +50,9 @@ public final class ResourceManager {
     private int leaderboardSize, milestone;
 
     private BukkitTask saveTask;
+
+    private String languageOverride;
+    private TranslationRegistry translationRegistry;
 
     public ResourceManager(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
@@ -166,6 +173,9 @@ public final class ResourceManager {
         final FileConfiguration eggsConfig = loadConfig("eggs.yml");
         final FileConfiguration dropsConfig = loadConfig("drops.yml");
 
+        // Load language override settings
+        languageOverride = config.getString("LanguageOverride", "none");
+
         // Load range values
         minimumRange = config.getInt("Spawn.Range.Minimum", 10);
         maximumRange = config.getInt("Spawn.Range.Maximum", 50);
@@ -257,6 +267,8 @@ public final class ResourceManager {
 
         // Calculate sum of all weight of all drops for drop change
         totalWeight = drops.stream().mapToInt(EasterEggDrop::getWeight).sum();
+
+        registerLanguages();
     }
 
     /**
@@ -269,6 +281,32 @@ public final class ResourceManager {
         // Delay saving, if multiple edits are made
         // Run saving asynchronously
         saveTask = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, this::saveResourceHandle, SAVE_DELAY);
+    }
+
+    /**
+     * Register languages from language files.
+     */
+    private void registerLanguages() {
+        if (translationRegistry != null)
+            GlobalTranslator.translator().removeSource(translationRegistry);
+
+        translationRegistry = TranslationRegistry.create(Key.key("egghunt"));
+        translationRegistry.defaultLocale(languageOverride.equals("german") ? Locale.GERMAN : Locale.ENGLISH);
+
+        if (languageOverride.equals("german")) {
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
+            translationRegistry.registerAll(Locale.GERMAN, bundle, true);
+        } else if (languageOverride.equals("english")) {
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
+            translationRegistry.registerAll(Locale.ENGLISH, bundle, true);
+        } else {
+            ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
+            translationRegistry.registerAll(Locale.ENGLISH, bundle, true);
+            bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
+            translationRegistry.registerAll(Locale.GERMAN, bundle, true);
+        }
+
+        GlobalTranslator.translator().addSource(translationRegistry);
     }
 
     /**

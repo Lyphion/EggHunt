@@ -94,6 +94,13 @@ public final class DropsInventory implements InventoryHolder {
                                     Component.text(drop.getWeight(), ColorConstants.ERROR))
                             .decoration(TextDecoration.ITALIC, false), locale));
 
+                    final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
+                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
+                                    Component.text(probability, ColorConstants.HIGHLIGHT))
+                            .decoration(TextDecoration.ITALIC, false), locale));
+
+                    lore.add(Component.empty());
+
                     // Add description on how to delete it
                     lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
                             .decoration(TextDecoration.ITALIC, false), locale));
@@ -127,6 +134,13 @@ public final class DropsInventory implements InventoryHolder {
                     lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
                                     Component.text(drop.getWeight(), ColorConstants.ERROR))
                             .decoration(TextDecoration.ITALIC, false), locale));
+
+                    final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
+                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
+                                    Component.text(probability, ColorConstants.HIGHLIGHT))
+                            .decoration(TextDecoration.ITALIC, false), locale));
+
+                    lore.add(Component.empty());
 
                     // Add description on how to delete it
                     lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
@@ -177,6 +191,8 @@ public final class DropsInventory implements InventoryHolder {
             lore.removeLast();
             lore.removeLast();
             lore.removeLast();
+            lore.removeLast();
+            lore.removeLast();
             if (!lore.isEmpty())
                 lore.removeLast();
 
@@ -218,6 +234,9 @@ public final class DropsInventory implements InventoryHolder {
 
             // Remove description from item
             final List<Component> lore = Objects.requireNonNull(meta.lore());
+            lore.removeLast();
+            lore.removeLast();
+            lore.removeLast();
             lore.removeLast();
             lore.removeLast();
             if (!lore.isEmpty())

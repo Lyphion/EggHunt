@@ -1,3 +1,6 @@
+# Override the automatic language setting (none, english, german)
+LanguageOverride: none
+
 Spawn:
   # Range around a player where an Easter egg may spawn
   Range:
