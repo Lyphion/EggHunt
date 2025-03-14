@@ -4,6 +4,8 @@ import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemLore;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -13,7 +15,6 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+@SuppressWarnings("UnstableApiUsage")
 public final class EasterEggInventory implements InventoryHolder {
 
     private static final int PAGE_SIZE = 45;
@@ -76,29 +78,29 @@ public final class EasterEggInventory implements InventoryHolder {
         for (int i = startIndex; i < endIndex; i++) {
             final ItemStack item = eggs.get(i).clone();
 
-            // Modify item to include description
-            item.editMeta(meta -> {
-                final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
+            final List<Component> lore = item.hasData(DataComponentTypes.LORE)
+                    ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
+                    : new ArrayList<>();
 
-                if (!lore.isEmpty())
-                    lore.add(Component.empty());
+            if (!lore.isEmpty())
+                lore.add(Component.empty());
 
-                // Add description on how to delete it
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                        .decoration(TextDecoration.ITALIC, false), locale));
-                meta.lore(lore);
-            });
+            // Add description on how to delete it
+            lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
+                    .decoration(TextDecoration.ITALIC, false), locale));
+
+            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
             inventory.setItem(i - startIndex, item);
         }
 
         // Add page switching items
         final ItemStack previous = new ItemStack(Material.ARROW);
-        previous.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT));
         inventory.setItem(PAGE_SIZE, previous);
 
         final ItemStack next = new ItemStack(Material.ARROW);
-        next.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT));
         inventory.setItem(PAGE_SIZE + 8, next);
     }
 
@@ -114,16 +116,16 @@ public final class EasterEggInventory implements InventoryHolder {
             return null;
 
         item = item.clone();
-        item.editMeta(meta -> {
-            // Setup tag to identity item as egg
-            final PersistentDataContainer container = meta.getPersistentDataContainer();
+        item.editPersistentDataContainer(container -> {
+            // Add tags identifying the egg
             container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
-
-            // Cleanup description from item
-            final List<Component> lore = Objects.requireNonNull(meta.lore());
-            lore.set(lore.size() - 1, EggManager.USAGE_DESCRIPTION);
-            meta.lore(lore);
         });
+
+        final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
+
+        // Cleanup description from item
+        lore.set(lore.size() - 1, EggManager.USAGE_DESCRIPTION);
+        item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
         return item;
     }
@@ -135,19 +137,23 @@ public final class EasterEggInventory implements InventoryHolder {
      */
     public void addEgg(@NotNull ItemStack item) {
         item = item.asOne();
-        item.editMeta(meta -> {
+
+        item.editPersistentDataContainer(container -> {
             // Cleanup possible tags
-            final PersistentDataContainer container = meta.getPersistentDataContainer();
             container.remove(NamespacedKeyConstants.EASTER_EGG_KEY);
+        });
+
+        // Cleanup description from item
+        if (item.hasData(DataComponentTypes.LORE)) {
+            final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
 
             // Remove description from item
-            final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
             lore.remove(EggManager.USAGE_DESCRIPTION);
             if (!lore.isEmpty() && lore.getLast().equals(Component.empty()))
                 lore.removeLast();
 
-            meta.lore(lore);
-        });
+            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
+        }
 
         // Add egg
         resourceManager.addEgg(item);
@@ -166,15 +172,14 @@ public final class EasterEggInventory implements InventoryHolder {
         if (item == null || slot < 0 || slot >= PAGE_SIZE)
             return null;
 
-        item.editMeta(meta -> {
-            // Remove description from item
-            final List<Component> lore = Objects.requireNonNull(meta.lore());
-            lore.removeLast();
-            if (!lore.isEmpty())
-                lore.removeLast();
+        final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
 
-            meta.lore(lore);
-        });
+        // Remove description from item
+        lore.removeLast();
+        if (!lore.isEmpty())
+            lore.removeLast();
+
+        item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
         // Remove egg
         resourceManager.removeEgg(item);

@@ -6,6 +6,7 @@ import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
@@ -19,8 +20,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -45,12 +44,8 @@ public final class EntityListener implements Listener {
     private void onItemPickup(@NotNull EntityPickupItemEvent event) {
         final ItemStack item = event.getItem().getItemStack();
 
-        if (!item.hasItemMeta())
-            return;
-
         // Check if item was an egg
-        final ItemMeta itemMeta = item.getItemMeta();
-        final PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        final PersistentDataContainerView container = item.getPersistentDataContainer();
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
             return;
 
@@ -66,9 +61,8 @@ public final class EntityListener implements Listener {
         // Update statistic
         final int count = statisticManager.addPoints(player.getUniqueId(), 1);
 
-        // Remove tag, with indicate a new egg
-        container.remove(NamespacedKeyConstants.NATURAL_EGG_KEY);
-        item.setItemMeta(itemMeta);
+        // Remove tag, which indicate a new egg
+        item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.NATURAL_EGG_KEY));
 
         boolean shootFirework = false;
 
@@ -119,12 +113,8 @@ public final class EntityListener implements Listener {
     private void onInventoryPickup(@NotNull InventoryPickupItemEvent event) {
         final ItemStack item = event.getItem().getItemStack();
 
-        if (!item.hasItemMeta())
-            return;
-
         // Only player should be able to pick up egg
-        final ItemMeta itemMeta = item.getItemMeta();
-        final PersistentDataContainer container = itemMeta.getPersistentDataContainer();
+        final PersistentDataContainerView container = item.getPersistentDataContainer();
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
             return;
 
@@ -136,7 +126,7 @@ public final class EntityListener implements Listener {
         final ItemStack item = event.getItem();
 
         // We only care for eggs
-        if (item == null || !item.hasItemMeta() || !item.getItemMeta().getPersistentDataContainer().has(NamespacedKeyConstants.EASTER_EGG_KEY))
+        if (item == null || !item.getPersistentDataContainer().has(NamespacedKeyConstants.EASTER_EGG_KEY))
             return;
 
         // Only left-click+shift is relevant, everything else should not work

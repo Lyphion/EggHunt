@@ -2,6 +2,8 @@ package dev.lyphium.egghunt.manager;
 
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemLore;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -17,7 +19,6 @@ import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
@@ -70,6 +71,7 @@ public final class EggManager {
      * @param location Center of the spawning area
      * @return {@code true} if egg was spawned
      */
+    @SuppressWarnings("UnstableApiUsage")
     public boolean spawn(@NotNull Location location) {
         // Get spawning space, if none was found to nothing
         final Location spawn = findSpawnLocation(location);
@@ -78,27 +80,26 @@ public final class EggManager {
 
         // Get random egg to spawn
         final ItemStack item = resourceManager.getRandomEgg();
-
-        // Mark egg as natural spawned Easter egg
-        item.editMeta(meta -> {
-            // Add tags identifying the egg
-            final PersistentDataContainer container = meta.getPersistentDataContainer();
+        item.editPersistentDataContainer(container -> {
+            // Mark egg as natural spawned Easter egg
             container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
+            // Add tags identifying the egg
             container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
+        });
 
-            final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
+        final List<Component> lore = item.hasData(DataComponentTypes.LORE)
+                ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
+                : new ArrayList<>();
 
-            // Failsafe to only include description once
-            if (lore.contains(USAGE_DESCRIPTION))
-                return;
-
+        // Failsafe to only include description once
+        if (!lore.contains(USAGE_DESCRIPTION)) {
             // Add usage description
             if (!lore.isEmpty())
                 lore.add(Component.empty());
-            lore.add(USAGE_DESCRIPTION);
 
-            meta.lore(lore);
-        });
+            lore.add(USAGE_DESCRIPTION);
+            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
+        }
 
         // Spawn egg in the world
         final World world = spawn.getWorld();

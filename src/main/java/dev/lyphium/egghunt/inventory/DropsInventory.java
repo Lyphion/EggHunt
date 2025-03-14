@@ -5,6 +5,9 @@ import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.OneOf;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemLore;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -14,13 +17,13 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+@SuppressWarnings("UnstableApiUsage")
 public final class DropsInventory implements InventoryHolder {
 
     private static final int PAGE_SIZE = 45;
@@ -76,78 +79,76 @@ public final class DropsInventory implements InventoryHolder {
             if (drop.getItemDrop() != null) {
                 final ItemStack item = drop.getItemDrop().asOne();
 
+                // Add tag to enable easy deletion
+                item.editPersistentDataContainer(container -> container.set(NamespacedKeyConstants.DROP_ID_KEY, PersistentDataType.STRING, drop.getUuid().toString()));
+
                 // Modify item to include description
-                item.editMeta(meta -> {
-                    // Add tag to enable easy deletion
-                    final PersistentDataContainer container = meta.getPersistentDataContainer();
-                    container.set(NamespacedKeyConstants.DROP_ID_KEY, PersistentDataType.STRING, drop.getUuid().toString());
+                final List<Component> lore = item.hasData(DataComponentTypes.LORE)
+                        ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
+                        : new ArrayList<>();
 
-                    final List<Component> lore = meta.hasLore() ? Objects.requireNonNull(meta.lore()) : new ArrayList<>();
-                    if (!lore.isEmpty())
-                        lore.add(Component.empty());
-
-                    // Add description of amount and weight
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.amount", ColorConstants.DEFAULT,
-                                    Component.text(drop.getMinimumAmount(), ColorConstants.ERROR), Component.text(drop.getMaximumAmount(), ColorConstants.ERROR))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
-                                    Component.text(drop.getWeight(), ColorConstants.ERROR))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-
-                    final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
-                                    Component.text(probability, ColorConstants.HIGHLIGHT))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-
+                if (!lore.isEmpty())
                     lore.add(Component.empty());
 
-                    // Add description on how to delete it
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                            .decoration(TextDecoration.ITALIC, false), locale));
+                // Add description of amount and weight
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.amount", ColorConstants.DEFAULT,
+                                Component.text(drop.getMinimumAmount(), ColorConstants.ERROR), Component.text(drop.getMaximumAmount(), ColorConstants.ERROR))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
+                                Component.text(drop.getWeight(), ColorConstants.ERROR))
+                        .decoration(TextDecoration.ITALIC, false), locale));
 
-                    meta.lore(lore);
-                });
+                final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
+                                Component.text(probability, ColorConstants.HIGHLIGHT))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+
+                lore.add(Component.empty());
+
+                // Add description on how to delete it
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+
+                item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
                 inventory.setItem(i - startIndex, item);
             } else if (drop.getCommandDrop() != null) {
                 final ItemStack item = new ItemStack(Material.PAPER);
 
-                // Modify item to include description
-                item.editMeta(meta -> {
-                    // Add tag to enable easy deletion and mark as command
-                    final PersistentDataContainer container = meta.getPersistentDataContainer();
+                // Add tag to enable easy deletion
+                item.editPersistentDataContainer(container -> {
                     container.set(NamespacedKeyConstants.DROP_ID_KEY, PersistentDataType.STRING, drop.getUuid().toString());
                     container.set(NamespacedKeyConstants.COMMAND_DROP_KEY, PersistentDataType.STRING, drop.getCommandDrop());
-
-                    // Change display name to "Command"
-                    meta.displayName(Component.translatable("advMode.command", ColorConstants.HIGHLIGHT).decoration(TextDecoration.ITALIC, false));
-                    meta.setEnchantmentGlintOverride(true);
-
-                    final List<Component> lore = new ArrayList<>();
-
-                    // Add command as core
-                    lore.add(Component.text("» ", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)
-                            .append(Component.translatable(drop.getCommandDrop(), ColorConstants.WHITE).decoration(TextDecoration.ITALIC, false)));
-                    lore.add(Component.empty());
-
-                    // Add description of amount and weight
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
-                                    Component.text(drop.getWeight(), ColorConstants.ERROR))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-
-                    final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
-                                    Component.text(probability, ColorConstants.HIGHLIGHT))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-
-                    lore.add(Component.empty());
-
-                    // Add description on how to delete it
-                    lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                            .decoration(TextDecoration.ITALIC, false), locale));
-
-                    meta.lore(lore);
                 });
+
+                item.setData(DataComponentTypes.ITEM_NAME, Component.translatable("advMode.command", ColorConstants.HIGHLIGHT));
+                item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+                // Modify item to include description
+                final List<Component> lore = new ArrayList<>();
+
+                // Add command as core
+                lore.add(Component.text("» ", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)
+                        .append(Component.translatable(drop.getCommandDrop(), ColorConstants.WHITE).decoration(TextDecoration.ITALIC, false)));
+                lore.add(Component.empty());
+
+                // Add description of amount and weight
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
+                                Component.text(drop.getWeight(), ColorConstants.ERROR))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+
+                final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
+                                Component.text(probability, ColorConstants.HIGHLIGHT))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+
+                lore.add(Component.empty());
+
+                // Add description on how to delete it
+                lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
+                        .decoration(TextDecoration.ITALIC, false), locale));
+
+                item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
                 inventory.setItem(i - startIndex, item);
             }
@@ -155,11 +156,11 @@ public final class DropsInventory implements InventoryHolder {
 
         // Add page switching items
         final ItemStack previous = new ItemStack(Material.ARROW);
-        previous.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT));
         inventory.setItem(PAGE_SIZE, previous);
 
         final ItemStack next = new ItemStack(Material.ARROW);
-        next.editMeta(meta -> meta.displayName(Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)));
+        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT));
         inventory.setItem(PAGE_SIZE + 8, next);
     }
 
@@ -175,29 +176,22 @@ public final class DropsInventory implements InventoryHolder {
             return null;
 
         // Check if Command, then return command string
-        final PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
+        final PersistentDataContainerView container = item.getPersistentDataContainer();
         if (container.has(NamespacedKeyConstants.COMMAND_DROP_KEY)) {
             return OneOf.ofSecond(Objects.requireNonNull(container.get(NamespacedKeyConstants.COMMAND_DROP_KEY, PersistentDataType.STRING)));
         }
 
         // Otherwise cleanup item
         item = item.clone();
-        item.editMeta(meta -> {
-            final PersistentDataContainer c = meta.getPersistentDataContainer();
-            c.remove(NamespacedKeyConstants.DROP_ID_KEY);
+        item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.DROP_ID_KEY));
 
-            // Remove description from item
-            final List<Component> lore = Objects.requireNonNull(meta.lore());
+        final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
+        for (int i = 0; i < 5; i++)
             lore.removeLast();
+        if (!lore.isEmpty())
             lore.removeLast();
-            lore.removeLast();
-            lore.removeLast();
-            lore.removeLast();
-            if (!lore.isEmpty())
-                lore.removeLast();
 
-            meta.lore(lore);
-        });
+        item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
         return OneOf.ofFirst(item);
     }
@@ -214,7 +208,7 @@ public final class DropsInventory implements InventoryHolder {
             return null;
 
         // Get id of drop
-        final PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
+        final PersistentDataContainerView container = item.getPersistentDataContainer();
         final String id = container.get(NamespacedKeyConstants.DROP_ID_KEY, PersistentDataType.STRING);
         final UUID uuid = UUID.fromString(Objects.requireNonNull(id));
 
@@ -223,27 +217,18 @@ public final class DropsInventory implements InventoryHolder {
         setupInventory();
 
         // If drop was command, return nothing
-        if (container.has(NamespacedKeyConstants.COMMAND_DROP_KEY)) {
+        if (container.has(NamespacedKeyConstants.COMMAND_DROP_KEY))
             return null;
-        }
 
-        // Otherwise cleanup item
-        item.editMeta(meta -> {
-            final PersistentDataContainer c = meta.getPersistentDataContainer();
-            c.remove(NamespacedKeyConstants.DROP_ID_KEY);
+        item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.DROP_ID_KEY));
 
-            // Remove description from item
-            final List<Component> lore = Objects.requireNonNull(meta.lore());
+        final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
+        for (int i = 0; i < 5; i++)
             lore.removeLast();
+        if (!lore.isEmpty())
             lore.removeLast();
-            lore.removeLast();
-            lore.removeLast();
-            lore.removeLast();
-            if (!lore.isEmpty())
-                lore.removeLast();
 
-            meta.lore(lore);
-        });
+        item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
         return item;
     }
