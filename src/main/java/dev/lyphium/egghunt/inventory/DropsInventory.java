@@ -183,15 +183,7 @@ public final class DropsInventory implements InventoryHolder {
 
         // Otherwise cleanup item
         item = item.clone();
-        item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.DROP_ID_KEY));
-
-        final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
-        for (int i = 0; i < 5; i++)
-            lore.removeLast();
-        if (!lore.isEmpty())
-            lore.removeLast();
-
-        item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
+        cleanupItem(item);
 
         return OneOf.ofFirst(item);
     }
@@ -220,6 +212,17 @@ public final class DropsInventory implements InventoryHolder {
         if (container.has(NamespacedKeyConstants.COMMAND_DROP_KEY))
             return null;
 
+        cleanupItem(item);
+
+        return item;
+    }
+
+    /**
+     * Remove lore and tag from item.
+     *
+     * @param item Item to clean up
+     */
+    private void cleanupItem(@NotNull ItemStack item) {
         item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.DROP_ID_KEY));
 
         final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());
@@ -229,7 +232,5 @@ public final class DropsInventory implements InventoryHolder {
             lore.removeLast();
 
         item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
-
-        return item;
     }
 }
