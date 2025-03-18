@@ -119,7 +119,7 @@ public final class InventoryListener implements Listener {
                 }
                 // Otherwise format command and run as console
                 else if (human instanceof Player player) {
-                    final String formatCommand = EasterEggDrop.getFormatCommand(Objects.requireNonNull(drop.getSecond()), player);
+                    final String formatCommand = EasterEggDrop.getFormatedCommand(Objects.requireNonNull(drop.getSecond()), player);
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatCommand);
                 }
             }

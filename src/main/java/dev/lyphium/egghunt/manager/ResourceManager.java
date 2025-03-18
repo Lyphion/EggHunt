@@ -195,22 +195,22 @@ public final class ResourceManager {
         spawnSound = Sound.sound(
                 Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Spawn.Id", "minecraft:block.sniffer_egg.plop"))),
                 Sound.Source.NAMES.valueOr(config.getString("Sound.Spawn.Source", "neutral"), Sound.Source.NEUTRAL),
-                (float) config.getDouble("Sound.Spawn.Volume"),
-                (float) config.getDouble("Sound.Spawn.Pitch")
+                (float) config.getDouble("Sound.Spawn.Volume", 1.0),
+                (float) config.getDouble("Sound.Spawn.Pitch", 1.0)
         );
 
         openSound = Sound.sound(
                 Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Open.Id", "minecraft:bock.sniffer_egg.hatch"))),
                 Sound.Source.NAMES.valueOr(config.getString("Sound.Open.Source", "neutral"), Sound.Source.NEUTRAL),
-                (float) config.getDouble("Sound.Open.Volume"),
-                (float) config.getDouble("Sound.Open.Pitch")
+                (float) config.getDouble("Sound.Open.Volume", 1.0),
+                (float) config.getDouble("Sound.Open.Pitch", 1.0)
         );
 
         leaderboardSound = Sound.sound(
                 Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Leaderboard.Id", "minecraft:entity.firework_rocket.blast"))),
                 Sound.Source.NAMES.valueOr(config.getString("Sound.Leaderboard.Source", "neutral"), Sound.Source.NEUTRAL),
-                (float) config.getDouble("Sound.Leaderboard.Volume"),
-                (float) config.getDouble("Sound.Leaderboard.Pitch")
+                (float) config.getDouble("Sound.Leaderboard.Volume", 1.0),
+                (float) config.getDouble("Sound.Leaderboard.Pitch", 1.0)
         );
 
         // Load valid blocks for eggs
@@ -233,9 +233,8 @@ public final class ResourceManager {
         // Load Item drops from eggs
         drops.clear();
         for (final Object o : dropsConfig.getList("Items", List.of())) {
-            if (!(o instanceof Map<?, ?> map)) {
+            if (!(o instanceof Map<?, ?> map))
                 continue;
-            }
 
             final Object itemData = map.getOrDefault("Item", null);
             final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : 1;
@@ -250,9 +249,8 @@ public final class ResourceManager {
 
         // Load Command drops from eggs
         for (final Object o : dropsConfig.getList("Commands", List.of())) {
-            if (!(o instanceof Map<?, ?> map)) {
+            if (!(o instanceof Map<?, ?> map))
                 continue;
-            }
 
             final Object commandData = map.getOrDefault("Command", null);
             final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;

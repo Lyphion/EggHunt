@@ -172,7 +172,7 @@ public final class EntityListener implements Listener {
         // Handle command drop
         if (drop.getCommandDrop() != null) {
             // Format command, replace placeholder
-            final String formatCommand = EasterEggDrop.getFormatCommand(drop.getCommandDrop(), player);
+            final String formatCommand = EasterEggDrop.getFormatedCommand(drop.getCommandDrop(), player);
 
             // Run command as console
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatCommand);

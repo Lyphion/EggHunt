@@ -81,7 +81,11 @@ public final class EasterEggDrop {
      * @param player  Player targeting the command
      * @return Formated command.
      */
-    public static @NotNull String getFormatCommand(@NotNull String command, @NotNull Player player) {
+    public static @NotNull String getFormatedCommand(@NotNull String command, @NotNull Player player) {
+        // Fast-forward if no placeholder has to be replaced
+        if (!command.contains("@"))
+            return command;
+
         final Random random = new Random();
         final List<? extends Player> players = Bukkit.getOnlinePlayers().stream().toList();
         final Player randomPlayer = players.get(random.nextInt(players.size()));
@@ -108,7 +112,7 @@ public final class EasterEggDrop {
          * Values to replace
          * @p -> Player opening the egg
          * @r -> Random online player
-         * @n -> Nearest other player
+         * @n -> Nearest other player, or self, if only one player is online
          */
 
         return command
