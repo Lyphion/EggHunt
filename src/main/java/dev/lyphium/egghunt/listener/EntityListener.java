@@ -72,7 +72,7 @@ public final class EntityListener implements Listener {
 
             // Notify all player
             Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.factor", ColorConstants.DEFAULT,
-                    p.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR)))));
+                    player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR)))));
         }
 
         // Check if player reached rank 1
@@ -83,7 +83,7 @@ public final class EntityListener implements Listener {
             // Notify all player
             Bukkit.getOnlinePlayers().forEach(p -> {
                 p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.change", ColorConstants.DEFAULT,
-                        p.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR))));
+                        player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR))));
                 p.playSound(resourceManager.getLeaderboardSound());
             });
         }
