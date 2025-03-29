@@ -6,6 +6,7 @@ prefix: EggHunt
 load: POSTWORLD
 author: Lyphion
 description: Simple Easter egg hunt plugin
+website: https://github.com/Lyphion/EggHunt
 
 softdepend: [PlaceholderAPI]
 

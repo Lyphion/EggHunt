@@ -48,6 +48,12 @@ public final class EggManager {
     @Getter
     private boolean active;
 
+    /**
+     * Collection of players for whom no eggs will spawn, or notifications are displayed.
+     */
+    @Getter
+    private final Set<UUID> blacklist = new HashSet<>();
+
     public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
 
@@ -122,6 +128,10 @@ public final class EggManager {
 
         // Notify players around
         for (final Player player : world.getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
+            // Skip blacklisted players
+            if (blacklist.contains(player.getUniqueId()))
+                continue;
+
             player.playSound(resourceManager.getSpawnSound());
             final String format = Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", player.locale())).format(null);
             player.sendActionBar(MiniMessage.miniMessage().deserialize(format));
@@ -165,6 +175,12 @@ public final class EggManager {
             // If player has cooldown -> wait
             if (nextSpawns.get(uuid) > System.currentTimeMillis())
                 continue;
+
+            // Skip blacklisted players
+            if (blacklist.contains(uuid)) {
+                resetSpawnTimer(uuid);
+                continue;
+            }
 
             // Spawn egg around player and reset cooldown
             spawn(player.getLocation());
