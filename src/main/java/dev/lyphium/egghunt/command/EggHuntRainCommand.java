@@ -13,11 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public final class EggHuntSpawnCommand implements SubCommand {
+public final class EggHuntRainCommand implements SubCommand {
 
     private final EggManager eggManager;
 
-    public EggHuntSpawnCommand(@NotNull EggManager eggManager) {
+    public EggHuntRainCommand(@NotNull EggManager eggManager) {
         this.eggManager = eggManager;
     }
 
@@ -52,13 +52,8 @@ public final class EggHuntSpawnCommand implements SubCommand {
             }
         }
 
-        final boolean success = eggManager.spawn(target.getLocation());
-
-        if (success) {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.success", ColorConstants.SUCCESS)));
-        } else {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.failure", ColorConstants.WARNING)));
-        }
+        eggManager.rain(target.getLocation());
+        sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.rain.success", ColorConstants.SUCCESS)));
 
         return true;
     }

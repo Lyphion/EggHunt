@@ -19,6 +19,17 @@ Statistic:
   # Collecting a multiple of this generates firework and message
   Milestone: 100
 
+# Configuration for the Easter egg rain
+Rain:
+  # Radius of the rain cloud
+  Radius: 8
+  # Height offset to the player
+  Offset: 30
+  # Amount of Easter eggs to rain
+  Amount: 20
+  # Probability of how many eggs will break during the rain [(1 - Breaking) * Amount = Collectable]
+  Breaking: 0.95
+
 Sound:
   # Sound played when an Easter egg spawns
   Spawn:
@@ -35,6 +46,12 @@ Sound:
   # Sound played when first place is reached
   Leaderboard:
     Id: minecraft:entity.firework_rocket.twinkle_far
+    Source: neutral
+    Volume: 1.0
+    Pitch: 1.0
+  # Sound played when an egg breaks
+  Break:
+    Id: minecraft:entity.turtle.egg_break
     Source: neutral
     Volume: 1.0
     Pitch: 1.0

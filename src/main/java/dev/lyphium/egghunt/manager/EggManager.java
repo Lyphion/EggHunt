@@ -11,9 +11,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.entity.Item;
@@ -21,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,12 +32,18 @@ public final class EggManager {
                     Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
             .decoration(TextDecoration.ITALIC, false);
 
+    private final JavaPlugin plugin;
     private final ResourceManager resourceManager;
 
     /**
      * Collection of next valid time (cooldown) to spawn an egg for a player.
      */
     private final Map<UUID, Long> nextSpawns = new HashMap<>();
+
+    /**
+     * Collection of items to remove when hitting the ground.
+     */
+    private final List<Item> rainItems = new ArrayList<>();
 
     private final Random random = new Random(System.currentTimeMillis());
 
@@ -55,9 +60,11 @@ public final class EggManager {
     private final Set<UUID> blacklist = new HashSet<>();
 
     public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager) {
+        this.plugin = plugin;
         this.resourceManager = resourceManager;
 
         Bukkit.getScheduler().runTaskTimer(plugin, this::handleUpdate, 20, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::handleRainingItems, 1, 1);
         setActive(true);
     }
 
@@ -69,6 +76,16 @@ public final class EggManager {
     public void setActive(boolean active) {
         nextSpawns.clear();
         this.active = active;
+    }
+
+    /**
+     * Spawn a new egg around a position.
+     *
+     * @param location Center of the spawning area
+     * @return {@code true} if egg was spawned
+     */
+    public boolean spawn(@NotNull Location location) {
+        return spawn(location, false);
     }
 
     /**
@@ -146,6 +163,90 @@ public final class EggManager {
         return true;
     }
 
+    public void rain(@NotNull Location location) {
+        final Location center = location.clone().add(0, resourceManager.getRainOffset(), 0);
+        final World world = location.getWorld();
+        final int radius = resourceManager.getRainRadius();
+
+        new BukkitRunnable() {
+            static final int delay = 5;
+            int count = -20;
+
+            @Override
+            @SuppressWarnings("UnstableApiUsage")
+            public void run() {
+                if (count >= resourceManager.getRainAmount() * delay) {
+                    cancel();
+                    return;
+                }
+
+                world.spawnParticle(Particle.CLOUD, center, 5 * radius * radius, radius, 0, radius, 0);
+
+                count++;
+                if (count <= 0 || count % delay != 0)
+                    return;
+
+                final double r = radius * Math.sqrt(random.nextDouble());
+                final double theta = random.nextDouble() * Math.PI * 2;
+
+                final Location spawn = center.clone().add(r * Math.cos(theta), 0, r * Math.sin(theta));
+
+                // Get random egg to spawn
+                final ItemStack item = resourceManager.getRandomEgg();
+                item.editPersistentDataContainer(container -> {
+                    if (random.nextDouble() < resourceManager.getRainBreakProbability()) {
+                        // Mark egg as breakable Easter egg
+                        container.set(NamespacedKeyConstants.BREAKABLE_EGG_KEY, PersistentDataType.BOOLEAN, true);
+                    }
+
+                    // Mark egg as rain Easter egg
+                    container.set(NamespacedKeyConstants.RAIN_EGG_KEY, PersistentDataType.BOOLEAN, true);
+
+                    // Mark egg as natural spawned Easter egg
+                    container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
+                    // Add tags identifying the egg
+                    container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
+                });
+
+                final List<Component> lore = item.hasData(DataComponentTypes.LORE)
+                        ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
+                        : new ArrayList<>();
+
+                // Failsafe to only include description once
+                if (!lore.contains(USAGE_DESCRIPTION)) {
+                    // Add usage description
+                    if (!lore.isEmpty())
+                        lore.add(Component.empty());
+
+                    lore.add(USAGE_DESCRIPTION);
+                    item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
+                }
+
+                // Spawn egg in the world
+                final World world = spawn.getWorld();
+                final Item entity = world.spawn(spawn, Item.class, i -> {
+                    // Set properties
+                    i.setVelocity(new Vector());
+                    i.setItemStack(item);
+                    i.setCanMobPickup(false);
+                    i.setCanPlayerPickup(true);
+
+                    // Workaround to modify lifetime of item
+                    final ItemEntity itemEntity = ((CraftItem) i).getHandle();
+                    @SuppressWarnings("resource") final Level level = itemEntity.level();
+                    final int despawnRate = level.paperConfig().entities.spawning.altItemDespawnRate.enabled
+                            ? level.paperConfig().entities.spawning.altItemDespawnRate.items.getOrDefault(itemEntity.getItem(), level.spigotConfig.itemDespawnRate)
+                            : level.spigotConfig.itemDespawnRate;
+
+                    itemEntity.age = despawnRate - resourceManager.getLifetime() * 20;
+                });
+
+                // Add entity to raining list
+                rainItems.add(entity);
+            }
+        }.runTaskTimer(plugin, 2, 2);
+    }
+
     /**
      * Reset cooldown time, when a new egg spawns around player.
      *
@@ -163,7 +264,7 @@ public final class EggManager {
     /**
      * Task to spawn random eggs
      */
-    public void handleUpdate() {
+    private void handleUpdate() {
         // Skip round if spawning is disabled
         if (!active)
             return;
@@ -189,9 +290,42 @@ public final class EggManager {
             }
 
             // Spawn egg around player and reset cooldown
-            spawn(player.getLocation(), false);
+            spawn(player.getLocation());
             resetSpawnTimer(uuid);
         }
+    }
+
+    private void handleRainingItems() {
+        if (rainItems.isEmpty())
+            return;
+
+        final List<Item> toRemove = new ArrayList<>();
+
+        for (final Item item : rainItems) {
+            final Location location = item.getLocation();
+            final World world = location.getWorld();
+
+            if (!item.isDead() && !item.isOnGround() && !item.isInLava() && !item.isInWater()) {
+                world.spawnParticle(Particle.DUST, location, 1, 0, 0, 0, 0,
+                        new Particle.DustOptions(Color.fromRGB(java.awt.Color.HSBtoRGB(random.nextFloat(), 1, 1) & 0xFFFFFF), 1));
+                continue;
+            }
+
+            toRemove.add(item);
+
+            if (item.getItemStack().getPersistentDataContainer().has(NamespacedKeyConstants.BREAKABLE_EGG_KEY))
+                item.remove();
+
+            world.playSound(resourceManager.getBreakSound(), location.getX(), location.getY(), location.getZ());
+            world.spawnParticle(Particle.DUST, location, 50, 0.5, 0.5, 0.5, 0.1,
+                    new Particle.DustOptions(Color.fromRGB(java.awt.Color.HSBtoRGB(random.nextFloat(), 1, 1) & 0xFFFFFF), 1));
+
+            for (final Player player : world.getNearbyPlayers(location, 1)) {
+                player.damage(1);
+            }
+        }
+
+        rainItems.removeAll(toRemove);
     }
 
     /**

@@ -48,7 +48,11 @@ public final class EggHuntFindCommand implements SubCommand {
 
         // Spawn particle above eggs
         for (final Item item : items) {
-            player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
+            if (item.getItemStack().getPersistentDataContainer().has(NamespacedKeyConstants.FAKE_EGG_KEY)) {
+                player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
+            } else {
+                player.spawnParticle(Particle.HAPPY_VILLAGER, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
+            }
         }
 
         int amount = items.size();

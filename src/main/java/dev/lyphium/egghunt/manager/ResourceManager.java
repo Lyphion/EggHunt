@@ -41,13 +41,16 @@ public final class ResourceManager {
     private int totalWeight;
     private final List<EasterEggDrop> drops = new ArrayList<>();
 
-    private Sound spawnSound, openSound, leaderboardSound;
+    private Sound spawnSound, openSound, leaderboardSound, breakSound;
 
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
     private int lifetime;
 
     private int leaderboardSize, milestone;
+
+    private int rainRadius, rainOffset, rainAmount;
+    private double rainBreakProbability;
 
     private BukkitTask saveTask;
 
@@ -191,6 +194,12 @@ public final class ResourceManager {
         leaderboardSize = config.getInt("Statistic.Leaderboard", 5);
         milestone = config.getInt("Statistic.Milestone", 100);
 
+        // Load rain settings
+        rainRadius = config.getInt("Rain.Radius", 8);
+        rainOffset = config.getInt("Rain.Offset", 30);
+        rainAmount = config.getInt("Rain.Amount", 100);
+        rainBreakProbability = config.getDouble("Rain.Breaking", 0.95);
+
         // Load sounds
         spawnSound = Sound.sound(
                 Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Spawn.Id", "minecraft:block.sniffer_egg.plop"))),
@@ -211,6 +220,13 @@ public final class ResourceManager {
                 Sound.Source.NAMES.valueOr(config.getString("Sound.Leaderboard.Source", "neutral"), Sound.Source.NEUTRAL),
                 (float) config.getDouble("Sound.Leaderboard.Volume", 1.0),
                 (float) config.getDouble("Sound.Leaderboard.Pitch", 1.0)
+        );
+
+        breakSound = Sound.sound(
+                Objects.requireNonNull(NamespacedKey.fromString(config.getString("Sound.Break.Id", "minecraft:entity.turtle.egg_break"))),
+                Sound.Source.NAMES.valueOr(config.getString("Sound.Break.Source", "neutral"), Sound.Source.NEUTRAL),
+                (float) config.getDouble("Sound.Break.Volume", 1.0),
+                (float) config.getDouble("Sound.Break.Pitch", 1.0)
         );
 
         // Load valid blocks for eggs

@@ -7,7 +7,6 @@ import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.persistence.PersistentDataContainerView;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
@@ -61,10 +60,35 @@ public final class EntityListener implements Listener {
             event.getItem().setItemStack(ItemStack.empty());
 
             final Location location = event.getItem().getLocation();
+            final Firework firework = player.getWorld().spawn(location, Firework.class, f -> {
+                final FireworkEffect effect = FireworkEffect.builder()
+                        .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
+                        .withFade(Color.WHITE)
+                        .with(FireworkEffect.Type.BALL)
+                        .withFlicker()
+                        .withTrail()
+                        .build();
+
+                final FireworkMeta meta = f.getFireworkMeta();
+                meta.addEffect(effect);
+                meta.setPower(0);
+                f.setSilent(true);
+                f.setFireworkMeta(meta);
+            });
+
+            firework.detonate();
+            return;
+        }
+
+        // Handle breakable egg
+        if (container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY)) {
+            event.getItem().setItemStack(ItemStack.empty());
+
+            final Location location = event.getItem().getLocation();
             final World world = location.getWorld();
-            world.spawnParticle(Particle.EXPLOSION, location, 10);
-            world.playSound(Sound.sound(NamespacedKey.minecraft("entity.generic.explode"), Sound.Source.NEUTRAL, 1.0f, 1.0f), location.getX(), location.getY(), location.getZ());
-            player.damage(5);
+
+            world.playSound(resourceManager.getBreakSound(), location.getX(), location.getY(), location.getZ());
+            player.damage(1);
             return;
         }
 
@@ -75,7 +99,10 @@ public final class EntityListener implements Listener {
         final int count = statisticManager.addPoints(player.getUniqueId(), 1);
 
         // Remove tag, which indicate a new egg
-        item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.NATURAL_EGG_KEY));
+        item.editPersistentDataContainer(c -> {
+            c.remove(NamespacedKeyConstants.NATURAL_EGG_KEY);
+            c.remove(NamespacedKeyConstants.RAIN_EGG_KEY);
+        });
 
         boolean shootFirework = false;
 
@@ -105,21 +132,22 @@ public final class EntityListener implements Listener {
         if (!shootFirework)
             return;
 
-        final FireworkEffect effect = FireworkEffect.builder()
-                .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
-                .withFade(Color.WHITE)
-                .with(FireworkEffect.Type.BALL_LARGE)
-                .withFlicker()
-                .withTrail()
-                .build();
+        player.getWorld().spawn(player.getLocation().add(0, 3, 0), Firework.class, f -> {
+            final FireworkEffect effect = FireworkEffect.builder()
+                    .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
+                    .withFade(Color.WHITE)
+                    .with(FireworkEffect.Type.BALL_LARGE)
+                    .withFlicker()
+                    .withTrail()
+                    .build();
 
-        final Firework firework = player.getWorld().spawn(player.getLocation().add(0, 3, 0), Firework.class);
-        final FireworkMeta meta = firework.getFireworkMeta();
+            final FireworkMeta meta = f.getFireworkMeta();
 
-        meta.addEffect(effect);
-        meta.setPower(2);
-        firework.setTicksToDetonate(40);
-        firework.setFireworkMeta(meta);
+            meta.addEffect(effect);
+            meta.setPower(2);
+            f.setTicksToDetonate(40);
+            f.setFireworkMeta(meta);
+        });
     }
 
     @EventHandler
