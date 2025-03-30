@@ -75,10 +75,11 @@ public final class EggManager {
      * Spawn a new egg around a position.
      *
      * @param location Center of the spawning area
+     * @param fake     Whether the egg is fake
      * @return {@code true} if egg was spawned
      */
     @SuppressWarnings("UnstableApiUsage")
-    public boolean spawn(@NotNull Location location) {
+    public boolean spawn(@NotNull Location location, boolean fake) {
         // Get spawning space, if none was found to nothing
         final Location spawn = findSpawnLocation(location);
         if (spawn == null)
@@ -87,6 +88,11 @@ public final class EggManager {
         // Get random egg to spawn
         final ItemStack item = resourceManager.getRandomEgg();
         item.editPersistentDataContainer(container -> {
+            if (fake) {
+                // Mark egg as fake
+                container.set(NamespacedKeyConstants.FAKE_EGG_KEY, PersistentDataType.BOOLEAN, true);
+            }
+
             // Mark egg as natural spawned Easter egg
             container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
             // Add tags identifying the egg
@@ -129,7 +135,7 @@ public final class EggManager {
         // Notify players around
         for (final Player player : world.getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
             // Skip blacklisted players
-            if (blacklist.contains(player.getUniqueId()))
+            if (blacklist.contains(player.getUniqueId()) && !fake)
                 continue;
 
             player.playSound(resourceManager.getSpawnSound());
@@ -183,7 +189,7 @@ public final class EggManager {
             }
 
             // Spawn egg around player and reset cooldown
-            spawn(player.getLocation());
+            spawn(player.getLocation(), false);
             resetSpawnTimer(uuid);
         }
     }

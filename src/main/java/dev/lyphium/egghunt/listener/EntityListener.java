@@ -7,6 +7,7 @@ import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.persistence.PersistentDataContainerView;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
@@ -52,6 +53,18 @@ public final class EntityListener implements Listener {
         // Only allow players to pick it up
         if (!(event.getEntity() instanceof Player player)) {
             event.setCancelled(true);
+            return;
+        }
+
+        // Handle fake egg
+        if (container.has(NamespacedKeyConstants.FAKE_EGG_KEY)) {
+            event.getItem().setItemStack(ItemStack.empty());
+
+            final Location location = event.getItem().getLocation();
+            final World world = location.getWorld();
+            world.spawnParticle(Particle.EXPLOSION, location, 10);
+            world.playSound(Sound.sound(NamespacedKey.minecraft("entity.generic.explode"), Sound.Source.NEUTRAL, 1.0f, 1.0f));
+            player.damage(5);
             return;
         }
 

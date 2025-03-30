@@ -1,12 +1,10 @@
 package dev.lyphium.egghunt.command;
 
-import dev.lyphium.egghunt.manager.ResourceManager;
+import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,14 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class EggHuntFakeCommand implements SubCommand {
 
-    private final ResourceManager resourceManager;
+    private final EggManager eggManager;
 
-    public EggHuntFakeCommand(@NotNull ResourceManager resourceManager) {
-        this.resourceManager = resourceManager;
+    public EggHuntFakeCommand(@NotNull EggManager eggManager) {
+        this.eggManager = eggManager;
     }
 
     @Override
@@ -55,11 +52,13 @@ public final class EggHuntFakeCommand implements SubCommand {
             }
         }
 
-        target.playSound(resourceManager.getSpawnSound());
-        final String format = Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", target.locale())).format(null);
-        target.sendActionBar(MiniMessage.miniMessage().deserialize(format));
+        final boolean success = eggManager.spawn(target.getLocation(), true);
 
-        sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.fake.success", ColorConstants.SUCCESS)));
+        if (success) {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.fake.success", ColorConstants.SUCCESS)));
+        } else {
+            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.fake.failure", ColorConstants.WARNING)));
+        }
 
         return true;
     }
