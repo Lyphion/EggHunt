@@ -63,7 +63,7 @@ public final class EntityListener implements Listener {
             final Location location = event.getItem().getLocation();
             final World world = location.getWorld();
             world.spawnParticle(Particle.EXPLOSION, location, 10);
-            world.playSound(Sound.sound(NamespacedKey.minecraft("entity.generic.explode"), Sound.Source.NEUTRAL, 1.0f, 1.0f));
+            world.playSound(Sound.sound(NamespacedKey.minecraft("entity.generic.explode"), Sound.Source.NEUTRAL, 1.0f, 1.0f), location.getX(), location.getY(), location.getZ());
             player.damage(5);
             return;
         }
