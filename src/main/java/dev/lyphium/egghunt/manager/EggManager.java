@@ -100,7 +100,7 @@ public final class EggManager {
      * @return {@code true} if egg was spawned
      */
     public boolean spawn(@NotNull Location location) {
-        return spawn(location, false);
+        return spawn(location, false, false);
     }
 
     /**
@@ -110,9 +110,9 @@ public final class EggManager {
      * @param fake     Whether the egg is fake
      * @return {@code true} if egg was spawned
      */
-    public boolean spawn(@NotNull Location location, boolean fake) {
+    public boolean spawn(@NotNull Location location, boolean ignoreMinimum, boolean fake) {
         // Get spawning space, if none was found to nothing
-        final Location spawn = findSpawnLocation(location);
+        final Location spawn = findSpawnLocation(location, ignoreMinimum);
         if (spawn == null)
             return false;
 
@@ -533,10 +533,11 @@ public final class EggManager {
     /**
      * Find valid spawn location for an egg around position.
      *
-     * @param center Center of the search
+     * @param center        Center of the search
+     * @param ignoreMinimum Ignore minimum amount.
      * @return Valid spawning location for the egg or {@code null} if none was found
      */
-    private @Nullable Location findSpawnLocation(@NotNull Location center) {
+    private @Nullable Location findSpawnLocation(@NotNull Location center, boolean ignoreMinimum) {
         final World world = center.getWorld();
         final List<Location> locations = new ArrayList<>();
 
@@ -568,8 +569,8 @@ public final class EggManager {
             }
         }
 
-        // Check if no location was found -> early exit
-        if (locations.isEmpty())
+        // Check if no location was found or not enough -> early exit
+        if (locations.isEmpty() || locations.size() < resourceManager.getMinimumLocations() && !ignoreMinimum)
             return null;
 
         // Choose random location from options

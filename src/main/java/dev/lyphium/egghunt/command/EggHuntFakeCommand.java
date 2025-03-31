@@ -52,7 +52,7 @@ public final class EggHuntFakeCommand implements SubCommand {
             }
         }
 
-        final boolean success = eggManager.spawn(target.getLocation(), true);
+        final boolean success = eggManager.spawn(target.getLocation(), true, true);
 
         if (success) {
             sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.fake.success", ColorConstants.SUCCESS)));

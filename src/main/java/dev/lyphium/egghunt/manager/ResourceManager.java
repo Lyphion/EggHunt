@@ -47,6 +47,7 @@ public final class ResourceManager {
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
     private int lifetime;
+    private int minimumLocations;
 
     private EntityMode entityMode;
 
@@ -195,6 +196,9 @@ public final class ResourceManager {
 
         // Load lifetime
         lifetime = toSeconds(config.getString("Spawn.Lifetime", "00:05:00"));
+
+        // Load minimum locations
+        minimumLocations = config.getInt("Spawn.Locations", 5);
 
         // Load statistic settings
         leaderboardSize = config.getInt("Statistic.Leaderboard", 5);
