@@ -37,7 +37,7 @@ public final class EggManager {
                     Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
             .decoration(TextDecoration.ITALIC, false);
 
-    public static final Vector ARMOR_STAND_OFFSET = new Vector(0, 1.77, 0);
+    public static final Vector ARMOR_STAND_OFFSET = new Vector(0, 1.67, 0);
 
     private final JavaPlugin plugin;
     private final ResourceManager resourceManager;
@@ -133,6 +133,11 @@ public final class EggManager {
         return true;
     }
 
+    /**
+     * Spawn a cloud of Easter eggs.
+     *
+     * @param location Center below the cloud
+     */
     public void rain(@NotNull Location location) {
         final Location center = location.clone().add(0, resourceManager.getRainOffset(), 0);
         final World world = location.getWorld();
@@ -185,12 +190,24 @@ public final class EggManager {
         nextSpawns.put(uuid, System.currentTimeMillis() + duration * 1000);
     }
 
+    /**
+     * Remove all egg entities.
+     */
     public void removeAllEggs() {
         for (final Entity entity : eggs) {
             entity.remove();
         }
     }
 
+    /**
+     * Handle pick up of an Easter egg.
+     *
+     * @param player    Player collecting the egg.
+     * @param location  Location of the egg.
+     * @param fake      Whether the egg is fake.
+     * @param breakable Whether the egg will break.
+     * @return {@code true} if pick up was successful.
+     */
     public boolean handlePickup(@NotNull Player player, @NotNull Location location, boolean fake, boolean breakable) {
         // Handle fake egg
         if (fake) {
@@ -277,6 +294,11 @@ public final class EggManager {
         return true;
     }
 
+    /**
+     * Create an Easter egg item.
+     *
+     * @return Random Easter egg item.
+     */
     @SuppressWarnings("UnstableApiUsage")
     private @NotNull ItemStack createItemStack() {
         // Get random egg to spawn
@@ -302,12 +324,22 @@ public final class EggManager {
         return item;
     }
 
+    /**
+     * Spawn the carrying entity of the item.
+     *
+     * @param location  Location where to spawn to item.
+     * @param item      Carrying item.
+     * @param fake      Whether the Easter egg is fake.
+     * @param breakable Whether the Easter egg will break.
+     * @param falling   Whether the entity should fall.
+     * @return Spawned entity.
+     */
     private Entity spawnEggEntity(@NotNull Location location, @NotNull ItemStack item, boolean fake, boolean breakable, boolean falling) {
         final World world = location.getWorld();
 
         // Spawn egg in the world
         final Entity entity = switch (resourceManager.getEntityMode()) {
-            case ITEM -> world.spawn(location.clone().add(0,0.05, 0), Item.class, i -> {
+            case ITEM -> world.spawn(location.clone().add(0, 0.05, 0), Item.class, i -> {
                 // Set properties
                 i.setVelocity(new Vector());
                 i.setItemStack(item);
@@ -390,6 +422,9 @@ public final class EggManager {
         }
     }
 
+    /**
+     * Task to clean up raining items, and spawn particles.
+     */
     private void handleRainingItems() {
         if (rainItems.isEmpty())
             return;
@@ -410,6 +445,7 @@ public final class EggManager {
                 continue;
             }
 
+            // Find block where the item should land
             final RayTraceResult result = world.rayTraceBlocks(location, new Vector(0, -1, 0), 5, FluidCollisionMode.ALWAYS, true);
             if (result != null) {
                 final Vector position = result.getHitPosition();
@@ -436,6 +472,9 @@ public final class EggManager {
         rainItems.removeAll(toRemove);
     }
 
+    /**
+     * Task to collect and cleanup items.
+     */
     private void handleEggUpdate() {
         if (eggs.isEmpty())
             return;
@@ -481,7 +520,7 @@ public final class EggManager {
                     }
                 }
 
-                player.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 1.0F);
+                player.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 0.8F);
                 toRemove.add(entity);
                 entity.remove();
                 break;
