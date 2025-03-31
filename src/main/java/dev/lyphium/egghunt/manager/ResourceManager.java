@@ -1,6 +1,7 @@
 package dev.lyphium.egghunt.manager;
 
 import dev.lyphium.egghunt.data.EasterEggDrop;
+import dev.lyphium.egghunt.data.EntityMode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.key.Key;
@@ -46,6 +47,8 @@ public final class ResourceManager {
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
     private int lifetime;
+
+    private EntityMode entityMode;
 
     private int leaderboardSize, milestone;
 
@@ -178,6 +181,9 @@ public final class ResourceManager {
 
         // Load language override settings
         languageOverride = config.getString("LanguageOverride", "none");
+
+        // Load entity mode
+        entityMode = EntityMode.fromName(config.getString("Mode", "Item"));
 
         // Load range values
         minimumRange = config.getInt("Spawn.Range.Minimum", 10);

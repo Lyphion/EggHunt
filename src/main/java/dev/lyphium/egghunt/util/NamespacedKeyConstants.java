@@ -13,6 +13,5 @@ public final class NamespacedKeyConstants {
     public static final NamespacedKey NATURAL_EGG_KEY = new NamespacedKey(NAMESPACE, "natural_egg");
     public static final NamespacedKey FAKE_EGG_KEY = new NamespacedKey(NAMESPACE, "fake_egg");
     public static final NamespacedKey BREAKABLE_EGG_KEY = new NamespacedKey(NAMESPACE, "breakable_egg");
-    public static final NamespacedKey RAIN_EGG_KEY = new NamespacedKey(NAMESPACE, "rain_egg");
 
 }

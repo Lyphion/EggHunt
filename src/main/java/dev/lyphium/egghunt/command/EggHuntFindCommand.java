@@ -8,7 +8,7 @@ import dev.lyphium.egghunt.util.TextConstants;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Particle;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Item;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,17 +41,17 @@ public final class EggHuntFindCommand implements SubCommand {
 
         // Find all nearby eggs
         int range = resourceManager.getMaximumRange();
-        final List<Item> items = player.getWorld().getNearbyEntitiesByType(Item.class, player.getLocation(), range)
+        final List<Entity> items = player.getWorld().getNearbyEntitiesByType(Entity.class, player.getLocation(), range)
                 .stream()
-                .filter(i -> i.getItemStack().getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY))
+                .filter(i -> i.getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY))
                 .toList();
 
         // Spawn particle above eggs
-        for (final Item item : items) {
-            if (item.getItemStack().getPersistentDataContainer().has(NamespacedKeyConstants.FAKE_EGG_KEY)) {
-                player.spawnParticle(Particle.WITCH, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
+        for (final Entity entity : items) {
+            if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.FAKE_EGG_KEY)) {
+                player.spawnParticle(Particle.WITCH, entity.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
             } else {
-                player.spawnParticle(Particle.HAPPY_VILLAGER, item.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
+                player.spawnParticle(Particle.HAPPY_VILLAGER, entity.getLocation().add(0, 2.5, 0), 100, 0, 2, 0, 0);
             }
         }
 

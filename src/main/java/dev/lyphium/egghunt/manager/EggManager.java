@@ -14,9 +14,13 @@ import net.minecraft.world.level.Level;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftItem;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -43,7 +47,7 @@ public final class EggManager {
     /**
      * Collection of items to remove when hitting the ground.
      */
-    private final List<Item> rainItems = new ArrayList<>();
+    private final List<Entity> rainItems = new ArrayList<>();
 
     private final Random random = new Random(System.currentTimeMillis());
 
@@ -95,62 +99,17 @@ public final class EggManager {
      * @param fake     Whether the egg is fake
      * @return {@code true} if egg was spawned
      */
-    @SuppressWarnings("UnstableApiUsage")
     public boolean spawn(@NotNull Location location, boolean fake) {
         // Get spawning space, if none was found to nothing
         final Location spawn = findSpawnLocation(location);
         if (spawn == null)
             return false;
 
-        // Get random egg to spawn
-        final ItemStack item = resourceManager.getRandomEgg();
-        item.editPersistentDataContainer(container -> {
-            if (fake) {
-                // Mark egg as fake
-                container.set(NamespacedKeyConstants.FAKE_EGG_KEY, PersistentDataType.BOOLEAN, true);
-            }
-
-            // Mark egg as natural spawned Easter egg
-            container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
-            // Add tags identifying the egg
-            container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
-        });
-
-        final List<Component> lore = item.hasData(DataComponentTypes.LORE)
-                ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
-                : new ArrayList<>();
-
-        // Failsafe to only include description once
-        if (!lore.contains(USAGE_DESCRIPTION)) {
-            // Add usage description
-            if (!lore.isEmpty())
-                lore.add(Component.empty());
-
-            lore.add(USAGE_DESCRIPTION);
-            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
-        }
-
-        // Spawn egg in the world
-        final World world = spawn.getWorld();
-        world.spawn(spawn, Item.class, i -> {
-            // Set properties
-            i.setVelocity(new Vector());
-            i.setItemStack(item);
-            i.setCanMobPickup(false);
-            i.setCanPlayerPickup(true);
-
-            // Workaround to modify lifetime of item
-            final ItemEntity itemEntity = ((CraftItem) i).getHandle();
-            @SuppressWarnings("resource") final Level level = itemEntity.level();
-            final int despawnRate = level.paperConfig().entities.spawning.altItemDespawnRate.enabled
-                    ? level.paperConfig().entities.spawning.altItemDespawnRate.items.getOrDefault(itemEntity.getItem(), level.spigotConfig.itemDespawnRate)
-                    : level.spigotConfig.itemDespawnRate;
-
-            itemEntity.age = despawnRate - resourceManager.getLifetime() * 20;
-        });
+        final ItemStack item = createItemStack();
+        spawnEggEntity(spawn, item, fake, false);
 
         // Notify players around
-        for (final Player player : world.getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
+        for (final Player player : spawn.getWorld().getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
             // Skip blacklisted players
             if (blacklist.contains(player.getUniqueId()) && !fake)
                 continue;
@@ -173,7 +132,6 @@ public final class EggManager {
             int count = -20;
 
             @Override
-            @SuppressWarnings("UnstableApiUsage")
             public void run() {
                 if (count >= resourceManager.getRainAmount() * delay) {
                     cancel();
@@ -190,56 +148,11 @@ public final class EggManager {
                 final double theta = random.nextDouble() * Math.PI * 2;
 
                 final Location spawn = center.clone().add(r * Math.cos(theta), 0, r * Math.sin(theta));
+                final boolean breakable = random.nextDouble() < resourceManager.getRainBreakProbability();
 
-                // Get random egg to spawn
-                final ItemStack item = resourceManager.getRandomEgg();
-                item.editPersistentDataContainer(container -> {
-                    if (random.nextDouble() < resourceManager.getRainBreakProbability()) {
-                        // Mark egg as breakable Easter egg
-                        container.set(NamespacedKeyConstants.BREAKABLE_EGG_KEY, PersistentDataType.BOOLEAN, true);
-                    }
-
-                    // Mark egg as rain Easter egg
-                    container.set(NamespacedKeyConstants.RAIN_EGG_KEY, PersistentDataType.BOOLEAN, true);
-
-                    // Mark egg as natural spawned Easter egg
-                    container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
-                    // Add tags identifying the egg
-                    container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
-                });
-
-                final List<Component> lore = item.hasData(DataComponentTypes.LORE)
-                        ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
-                        : new ArrayList<>();
-
-                // Failsafe to only include description once
-                if (!lore.contains(USAGE_DESCRIPTION)) {
-                    // Add usage description
-                    if (!lore.isEmpty())
-                        lore.add(Component.empty());
-
-                    lore.add(USAGE_DESCRIPTION);
-                    item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
-                }
-
-                // Spawn egg in the world
-                final World world = spawn.getWorld();
-                final Item entity = world.spawn(spawn, Item.class, i -> {
-                    // Set properties
-                    i.setVelocity(new Vector());
-                    i.setItemStack(item);
-                    i.setCanMobPickup(false);
-                    i.setCanPlayerPickup(true);
-
-                    // Workaround to modify lifetime of item
-                    final ItemEntity itemEntity = ((CraftItem) i).getHandle();
-                    @SuppressWarnings("resource") final Level level = itemEntity.level();
-                    final int despawnRate = level.paperConfig().entities.spawning.altItemDespawnRate.enabled
-                            ? level.paperConfig().entities.spawning.altItemDespawnRate.items.getOrDefault(itemEntity.getItem(), level.spigotConfig.itemDespawnRate)
-                            : level.spigotConfig.itemDespawnRate;
-
-                    itemEntity.age = despawnRate - resourceManager.getLifetime() * 20;
-                });
+                // Create Easter egg
+                final ItemStack item = createItemStack();
+                final Entity entity = spawnEggEntity(spawn, item, false, breakable);
 
                 // Add entity to raining list
                 rainItems.add(entity);
@@ -259,6 +172,82 @@ public final class EggManager {
         // Find random time in duration range
         long duration = random.nextLong(minimumDuration, maximumDuration + 1);
         nextSpawns.put(uuid, System.currentTimeMillis() + duration * 1000);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private @NotNull ItemStack createItemStack() {
+        // Get random egg to spawn
+        final ItemStack item = resourceManager.getRandomEgg();
+        item.editPersistentDataContainer(container -> {
+            // Add tags identifying the egg
+            container.set(NamespacedKeyConstants.EASTER_EGG_KEY, PersistentDataType.BOOLEAN, true);
+        });
+
+        final List<Component> lore = item.hasData(DataComponentTypes.LORE)
+                ? new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines())
+                : new ArrayList<>();
+
+        // Failsafe to only include description once
+        if (!lore.contains(USAGE_DESCRIPTION)) {
+            // Add usage description
+            if (!lore.isEmpty())
+                lore.add(Component.empty());
+
+            lore.add(USAGE_DESCRIPTION);
+            item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
+        }
+        return item;
+    }
+
+    private Entity spawnEggEntity(@NotNull Location location, @NotNull ItemStack item, boolean fake, boolean breakable) {
+        final World world = location.getWorld();
+
+        // Spawn egg in the world
+        final Entity entity = switch (resourceManager.getEntityMode()) {
+            case ITEM -> world.spawn(location, Item.class, i -> {
+                // Set properties
+                i.setVelocity(new Vector());
+                i.setItemStack(item);
+                i.setCanMobPickup(false);
+                i.setCanPlayerPickup(true);
+
+                // Workaround to modify lifetime of item
+                final ItemEntity itemEntity = ((CraftItem) i).getHandle();
+                @SuppressWarnings("resource") final Level level = itemEntity.level();
+                final int despawnRate = level.paperConfig().entities.spawning.altItemDespawnRate.enabled
+                        ? level.paperConfig().entities.spawning.altItemDespawnRate.items.getOrDefault(itemEntity.getItem(), level.spigotConfig.itemDespawnRate)
+                        : level.spigotConfig.itemDespawnRate;
+
+                itemEntity.age = despawnRate - resourceManager.getLifetime() * 20;
+            });
+            case ARMOR_STAND -> world.spawn(location, ArmorStand.class, a -> {
+                // Set properties
+                a.setVelocity(new Vector());
+                a.setItem(EquipmentSlot.HEAD, item);
+                a.setInvisible(true);
+                a.setInvulnerable(true);
+                a.setMarker(true);
+                a.setGravity(false);
+                a.setDisabledSlots(EquipmentSlot.values());
+            });
+        };
+
+        final PersistentDataContainer container = entity.getPersistentDataContainer();
+
+        // Mark egg as natural spawned Easter egg
+        container.set(NamespacedKeyConstants.NATURAL_EGG_KEY, PersistentDataType.BOOLEAN, true);
+
+        if (fake) {
+            // Mark egg as fake
+            container.set(NamespacedKeyConstants.FAKE_EGG_KEY, PersistentDataType.BOOLEAN, true);
+        }
+
+        if (breakable) {
+            // Mark egg as breakable Easter egg
+            container.set(NamespacedKeyConstants.BREAKABLE_EGG_KEY, PersistentDataType.BOOLEAN, true);
+        }
+
+        return entity;
     }
 
     /**
@@ -299,22 +288,22 @@ public final class EggManager {
         if (rainItems.isEmpty())
             return;
 
-        final List<Item> toRemove = new ArrayList<>();
+        final List<Entity> toRemove = new ArrayList<>();
 
-        for (final Item item : rainItems) {
-            final Location location = item.getLocation();
+        for (final Entity entity : rainItems) {
+            final Location location = entity.getLocation();
             final World world = location.getWorld();
 
-            if (!item.isDead() && !item.isOnGround() && !item.isInLava() && !item.isInWater()) {
+            if (!entity.isDead() && !entity.isOnGround() && !entity.isInLava() && !entity.isInWater()) {
                 world.spawnParticle(Particle.DUST, location, 1, 0, 0, 0, 0,
                         new Particle.DustOptions(Color.fromRGB(java.awt.Color.HSBtoRGB(random.nextFloat(), 1, 1) & 0xFFFFFF), 1));
                 continue;
             }
 
-            toRemove.add(item);
+            toRemove.add(entity);
 
-            if (item.getItemStack().getPersistentDataContainer().has(NamespacedKeyConstants.BREAKABLE_EGG_KEY))
-                item.remove();
+            if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.BREAKABLE_EGG_KEY))
+                entity.remove();
 
             world.playSound(resourceManager.getBreakSound(), location.getX(), location.getY(), location.getZ());
             world.spawnParticle(Particle.DUST, location, 50, 0.5, 0.5, 0.5, 0.1,

@@ -10,6 +10,7 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Firework;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -42,10 +43,9 @@ public final class EntityListener implements Listener {
 
     @EventHandler
     private void onItemPickup(@NotNull EntityPickupItemEvent event) {
-        final ItemStack item = event.getItem().getItemStack();
+        final PersistentDataContainerView container = event.getItem().getPersistentDataContainer();
 
         // Check if item was an egg
-        final PersistentDataContainerView container = item.getPersistentDataContainer();
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
             return;
 
@@ -98,12 +98,6 @@ public final class EntityListener implements Listener {
         // Update statistic
         final int count = statisticManager.addPoints(player.getUniqueId(), 1);
 
-        // Remove tag, which indicate a new egg
-        item.editPersistentDataContainer(c -> {
-            c.remove(NamespacedKeyConstants.NATURAL_EGG_KEY);
-            c.remove(NamespacedKeyConstants.RAIN_EGG_KEY);
-        });
-
         boolean shootFirework = false;
 
         // Check if egg count crossed milestone
@@ -152,7 +146,7 @@ public final class EntityListener implements Listener {
 
     @EventHandler
     private void onInventoryPickup(@NotNull InventoryPickupItemEvent event) {
-        final ItemStack item = event.getItem().getItemStack();
+        final Item item = event.getItem();
 
         // Only player should be able to pick up egg
         final PersistentDataContainerView container = item.getPersistentDataContainer();
