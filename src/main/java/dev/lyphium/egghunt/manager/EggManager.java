@@ -2,8 +2,10 @@ package dev.lyphium.egghunt.manager;
 
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
+import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -14,16 +16,15 @@ import net.minecraft.world.level.Level;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.entity.CraftItem;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,8 +37,11 @@ public final class EggManager {
                     Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
             .decoration(TextDecoration.ITALIC, false);
 
+    public static final Vector ARMOR_STAND_OFFSET = new Vector(0, 1.77, 0);
+
     private final JavaPlugin plugin;
     private final ResourceManager resourceManager;
+    private final StatisticManager statisticManager;
 
     /**
      * Collection of next valid time (cooldown) to spawn an egg for a player.
@@ -48,6 +52,11 @@ public final class EggManager {
      * Collection of items to remove when hitting the ground.
      */
     private final List<Entity> rainItems = new ArrayList<>();
+
+    /**
+     * Collection of natural eggs.
+     */
+    private final List<Entity> eggs = new ArrayList<>();
 
     private final Random random = new Random(System.currentTimeMillis());
 
@@ -63,11 +72,13 @@ public final class EggManager {
     @Getter
     private final Set<UUID> blacklist = new HashSet<>();
 
-    public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager) {
+    public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager, @NotNull StatisticManager statisticManager) {
         this.plugin = plugin;
         this.resourceManager = resourceManager;
+        this.statisticManager = statisticManager;
 
-        Bukkit.getScheduler().runTaskTimer(plugin, this::handleUpdate, 20, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::handleSpawnUpdate, 20, 20);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::handleEggUpdate, 2, 2);
         Bukkit.getScheduler().runTaskTimer(plugin, this::handleRainingItems, 1, 1);
         setActive(true);
     }
@@ -106,7 +117,7 @@ public final class EggManager {
             return false;
 
         final ItemStack item = createItemStack();
-        spawnEggEntity(spawn, item, fake, false);
+        spawnEggEntity(spawn, item, fake, false, false);
 
         // Notify players around
         for (final Player player : spawn.getWorld().getNearbyPlayers(spawn, resourceManager.getMaximumRange())) {
@@ -152,7 +163,7 @@ public final class EggManager {
 
                 // Create Easter egg
                 final ItemStack item = createItemStack();
-                final Entity entity = spawnEggEntity(spawn, item, false, breakable);
+                final Entity entity = spawnEggEntity(spawn, item, false, breakable, true);
 
                 // Add entity to raining list
                 rainItems.add(entity);
@@ -172,6 +183,98 @@ public final class EggManager {
         // Find random time in duration range
         long duration = random.nextLong(minimumDuration, maximumDuration + 1);
         nextSpawns.put(uuid, System.currentTimeMillis() + duration * 1000);
+    }
+
+    public void removeAllEggs() {
+        for (final Entity entity : eggs) {
+            entity.remove();
+        }
+    }
+
+    public boolean handlePickup(@NotNull Player player, @NotNull Location location, boolean fake, boolean breakable) {
+        // Handle fake egg
+        if (fake) {
+            final Firework firework = player.getWorld().spawn(location, Firework.class, f -> {
+                final FireworkEffect effect = FireworkEffect.builder()
+                        .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
+                        .withFade(Color.WHITE)
+                        .with(FireworkEffect.Type.BALL)
+                        .withFlicker()
+                        .withTrail()
+                        .build();
+
+                final FireworkMeta meta = f.getFireworkMeta();
+                meta.addEffect(effect);
+                meta.setPower(0);
+                f.setSilent(true);
+                f.setFireworkMeta(meta);
+            });
+
+            firework.detonate();
+            return false;
+        }
+
+        // Handle breakable egg
+        if (breakable) {
+            final World world = location.getWorld();
+
+            world.playSound(resourceManager.getBreakSound(), location.getX(), location.getY(), location.getZ());
+            player.damage(1);
+            return false;
+        }
+
+        // Get old rank of the player to compare it afterward.
+        final int oldRank = statisticManager.getStatistic(player.getUniqueId()).getA();
+
+        // Update statistic
+        final int count = statisticManager.addPoints(player.getUniqueId(), 1);
+
+        boolean shootFirework = false;
+
+        // Check if egg count crossed milestone
+        if (count % resourceManager.getMilestone() == 0) {
+            shootFirework = true;
+
+            // Notify all player
+            Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.factor", ColorConstants.DEFAULT,
+                    player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR)))));
+        }
+
+        // Check if player reached rank 1
+        final int newRank = statisticManager.getStatistic(player.getUniqueId()).getA();
+        if (newRank == 1 && oldRank != newRank) {
+            shootFirework = true;
+
+            // Notify all player
+            Bukkit.getOnlinePlayers().forEach(p -> {
+                p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.change", ColorConstants.DEFAULT,
+                        player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR))));
+                p.playSound(resourceManager.getLeaderboardSound());
+            });
+        }
+
+        // Check if firework should be spawned (milestone or new first place)
+        if (!shootFirework)
+            return true;
+
+        player.getWorld().spawn(player.getLocation().add(0, 3, 0), Firework.class, f -> {
+            final FireworkEffect effect = FireworkEffect.builder()
+                    .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
+                    .withFade(Color.WHITE)
+                    .with(FireworkEffect.Type.BALL_LARGE)
+                    .withFlicker()
+                    .withTrail()
+                    .build();
+
+            final FireworkMeta meta = f.getFireworkMeta();
+
+            meta.addEffect(effect);
+            meta.setPower(2);
+            f.setTicksToDetonate(40);
+            f.setFireworkMeta(meta);
+        });
+
+        return true;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -199,12 +302,12 @@ public final class EggManager {
         return item;
     }
 
-    private Entity spawnEggEntity(@NotNull Location location, @NotNull ItemStack item, boolean fake, boolean breakable) {
+    private Entity spawnEggEntity(@NotNull Location location, @NotNull ItemStack item, boolean fake, boolean breakable, boolean falling) {
         final World world = location.getWorld();
 
         // Spawn egg in the world
         final Entity entity = switch (resourceManager.getEntityMode()) {
-            case ITEM -> world.spawn(location, Item.class, i -> {
+            case ITEM -> world.spawn(location.clone().add(0,0.05, 0), Item.class, i -> {
                 // Set properties
                 i.setVelocity(new Vector());
                 i.setItemStack(item);
@@ -220,17 +323,20 @@ public final class EggManager {
 
                 itemEntity.age = despawnRate - resourceManager.getLifetime() * 20;
             });
-            case ARMOR_STAND -> world.spawn(location, ArmorStand.class, a -> {
+            case ARMOR_STAND -> world.spawn(location.clone().subtract(ARMOR_STAND_OFFSET), ArmorStand.class, a -> {
                 // Set properties
                 a.setVelocity(new Vector());
                 a.setItem(EquipmentSlot.HEAD, item);
                 a.setInvisible(true);
                 a.setInvulnerable(true);
-                a.setMarker(true);
-                a.setGravity(false);
+                // a.setMarker(true);
+                a.setGravity(falling);
                 a.setDisabledSlots(EquipmentSlot.values());
             });
         };
+
+        if (!(entity instanceof Item))
+            eggs.add(entity);
 
         final PersistentDataContainer container = entity.getPersistentDataContainer();
 
@@ -253,7 +359,7 @@ public final class EggManager {
     /**
      * Task to spawn random eggs
      */
-    private void handleUpdate() {
+    private void handleSpawnUpdate() {
         // Skip round if spawning is disabled
         if (!active)
             return;
@@ -292,6 +398,10 @@ public final class EggManager {
 
         for (final Entity entity : rainItems) {
             final Location location = entity.getLocation();
+
+            if (entity instanceof ArmorStand)
+                location.add(ARMOR_STAND_OFFSET);
+
             final World world = location.getWorld();
 
             if (!entity.isDead() && !entity.isOnGround() && !entity.isInLava() && !entity.isInWater()) {
@@ -300,7 +410,14 @@ public final class EggManager {
                 continue;
             }
 
-            toRemove.add(entity);
+            final RayTraceResult result = world.rayTraceBlocks(location, new Vector(0, -1, 0), 5, FluidCollisionMode.ALWAYS, true);
+            if (result != null) {
+                final Vector position = result.getHitPosition();
+                location.setY(position.getY());
+            }
+
+            entity.setGravity(false);
+            entity.teleport(location.clone().subtract(ARMOR_STAND_OFFSET));
 
             if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.BREAKABLE_EGG_KEY))
                 entity.remove();
@@ -312,9 +429,66 @@ public final class EggManager {
             for (final Player player : world.getNearbyPlayers(location, 1)) {
                 player.damage(1);
             }
+
+            toRemove.add(entity);
         }
 
         rainItems.removeAll(toRemove);
+    }
+
+    private void handleEggUpdate() {
+        if (eggs.isEmpty())
+            return;
+
+        final List<Entity> toRemove = new ArrayList<>();
+
+        for (final Entity entity : eggs) {
+            if (entity.isDead()) {
+                toRemove.add(entity);
+                continue;
+            }
+
+            final Location location = entity.getLocation();
+            if (entity instanceof ArmorStand) {
+                location.add(ARMOR_STAND_OFFSET);
+            }
+
+            final World world = location.getWorld();
+            for (final Player player : world.getNearbyPlayers(location, 0.5)) {
+                final PersistentDataContainerView container = entity.getPersistentDataContainer();
+
+                final boolean fake = container.has(NamespacedKeyConstants.FAKE_EGG_KEY);
+                final boolean breakable = container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY);
+
+                final ItemStack egg;
+                if (entity instanceof Item item) {
+                    egg = item.getItemStack();
+                } else if (entity instanceof ArmorStand armorStand) {
+                    egg = armorStand.getItem(EquipmentSlot.HEAD);
+                } else {
+                    break;
+                }
+
+                if (egg.isEmpty())
+                    break;
+
+                boolean success = handlePickup(player, location, fake, breakable);
+                if (success) {
+                    final HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(egg);
+
+                    for (final ItemStack itemStack : remaining.values()) {
+                        world.dropItem(location, itemStack);
+                    }
+                }
+
+                player.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 1.0F);
+                toRemove.add(entity);
+                entity.remove();
+                break;
+            }
+        }
+
+        eggs.removeAll(toRemove);
     }
 
     /**
@@ -350,7 +524,7 @@ public final class EggManager {
                         continue;
 
                     // Add block to valid locations
-                    locations.add(block.getLocation().add(0.5, 0.05, 0.5));
+                    locations.add(block.getLocation().add(0.5, 0.0, 0.5));
                 }
             }
         }

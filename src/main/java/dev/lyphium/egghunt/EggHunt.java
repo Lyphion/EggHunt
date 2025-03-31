@@ -24,8 +24,8 @@ public final class EggHunt extends JavaPlugin {
     @Override
     public void onEnable() {
         resourceManager = new ResourceManager(this);
-        eggManager = new EggManager(this, resourceManager);
         statisticManager = new StatisticManager(this);
+        eggManager = new EggManager(this, resourceManager, statisticManager);
 
         resourceManager.loadResources();
         statisticManager.loadStatistics();
@@ -43,6 +43,7 @@ public final class EggHunt extends JavaPlugin {
     @Override
     public void onDisable() {
         statisticManager.saveStatistics();
+        eggManager.removeAllEggs();
 
         Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.getOpenInventory().getTopInventory().getHolder() instanceof EasterEggInventory || p.getOpenInventory().getTopInventory().getHolder() instanceof DropsInventory)
@@ -57,7 +58,7 @@ public final class EggHunt extends JavaPlugin {
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new EntityListener(resourceManager, statisticManager), this);
+        getServer().getPluginManager().registerEvents(new EntityListener(resourceManager, eggManager), this);
         getServer().getPluginManager().registerEvents(new InventoryListener(), this);
     }
 }

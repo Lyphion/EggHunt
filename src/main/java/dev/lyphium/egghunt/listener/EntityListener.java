@@ -1,15 +1,13 @@
 package dev.lyphium.egghunt.listener;
 
 import dev.lyphium.egghunt.data.EasterEggDrop;
+import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
-import dev.lyphium.egghunt.manager.StatisticManager;
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.persistence.PersistentDataContainerView;
-import net.kyori.adventure.text.Component;
-import org.bukkit.*;
-import org.bukkit.entity.Firework;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -20,7 +18,6 @@ import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -31,19 +28,20 @@ public final class EntityListener implements Listener {
     private final Random random = new Random(System.currentTimeMillis());
 
     private final ResourceManager resourceManager;
-    private final StatisticManager statisticManager;
+    private final EggManager eggManager;
 
     public EntityListener(
             @NotNull ResourceManager resourceManager,
-            @NotNull StatisticManager statisticManager
+            @NotNull EggManager eggManager
     ) {
         this.resourceManager = resourceManager;
-        this.statisticManager = statisticManager;
+        this.eggManager = eggManager;
     }
 
     @EventHandler
     private void onItemPickup(@NotNull EntityPickupItemEvent event) {
-        final PersistentDataContainerView container = event.getItem().getPersistentDataContainer();
+        final Item item = event.getItem();
+        final PersistentDataContainerView container = item.getPersistentDataContainer();
 
         // Check if item was an egg
         if (!container.has(NamespacedKeyConstants.NATURAL_EGG_KEY))
@@ -55,93 +53,13 @@ public final class EntityListener implements Listener {
             return;
         }
 
-        // Handle fake egg
-        if (container.has(NamespacedKeyConstants.FAKE_EGG_KEY)) {
-            event.getItem().setItemStack(ItemStack.empty());
+        final boolean fake = container.has(NamespacedKeyConstants.FAKE_EGG_KEY);
+        final boolean breakable = container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY);
 
-            final Location location = event.getItem().getLocation();
-            final Firework firework = player.getWorld().spawn(location, Firework.class, f -> {
-                final FireworkEffect effect = FireworkEffect.builder()
-                        .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
-                        .withFade(Color.WHITE)
-                        .with(FireworkEffect.Type.BALL)
-                        .withFlicker()
-                        .withTrail()
-                        .build();
-
-                final FireworkMeta meta = f.getFireworkMeta();
-                meta.addEffect(effect);
-                meta.setPower(0);
-                f.setSilent(true);
-                f.setFireworkMeta(meta);
-            });
-
-            firework.detonate();
-            return;
+        boolean success = eggManager.handlePickup(player, item.getLocation(), fake, breakable);
+        if (!success) {
+            item.setItemStack(ItemStack.empty());
         }
-
-        // Handle breakable egg
-        if (container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY)) {
-            event.getItem().setItemStack(ItemStack.empty());
-
-            final Location location = event.getItem().getLocation();
-            final World world = location.getWorld();
-
-            world.playSound(resourceManager.getBreakSound(), location.getX(), location.getY(), location.getZ());
-            player.damage(1);
-            return;
-        }
-
-        // Get old rank of the player to compare it afterward.
-        final int oldRank = statisticManager.getStatistic(player.getUniqueId()).getA();
-
-        // Update statistic
-        final int count = statisticManager.addPoints(player.getUniqueId(), 1);
-
-        boolean shootFirework = false;
-
-        // Check if egg count crossed milestone
-        if (count % resourceManager.getMilestone() == 0) {
-            shootFirework = true;
-
-            // Notify all player
-            Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.factor", ColorConstants.DEFAULT,
-                    player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR)))));
-        }
-
-        // Check if player reached rank 1
-        final int newRank = statisticManager.getStatistic(player.getUniqueId()).getA();
-        if (newRank == 1 && oldRank != newRank) {
-            shootFirework = true;
-
-            // Notify all player
-            Bukkit.getOnlinePlayers().forEach(p -> {
-                p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.change", ColorConstants.DEFAULT,
-                        player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR))));
-                p.playSound(resourceManager.getLeaderboardSound());
-            });
-        }
-
-        // Check if firework should be spawned (milestone or new first place)
-        if (!shootFirework)
-            return;
-
-        player.getWorld().spawn(player.getLocation().add(0, 3, 0), Firework.class, f -> {
-            final FireworkEffect effect = FireworkEffect.builder()
-                    .withColor(Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE, Color.FUCHSIA)
-                    .withFade(Color.WHITE)
-                    .with(FireworkEffect.Type.BALL_LARGE)
-                    .withFlicker()
-                    .withTrail()
-                    .build();
-
-            final FireworkMeta meta = f.getFireworkMeta();
-
-            meta.addEffect(effect);
-            meta.setPower(2);
-            f.setTicksToDetonate(40);
-            f.setFireworkMeta(meta);
-        });
     }
 
     @EventHandler
