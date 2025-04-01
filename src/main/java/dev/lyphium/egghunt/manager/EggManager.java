@@ -594,7 +594,16 @@ public final class EggManager {
             return null;
 
         // Choose random location from options
-        return locations.get(random.nextInt(locations.size()));
+        final Location location = locations.get(random.nextInt(locations.size()));
+
+        // Move location down to next nearest block
+        final RayTraceResult result = world.rayTraceBlocks(location, new Vector(0, -1, 0), 5, FluidCollisionMode.ALWAYS, true);
+        if (result != null) {
+            final Vector position = result.getHitPosition();
+            location.setY(position.getY());
+        }
+
+        return location;
     }
 
     /**
