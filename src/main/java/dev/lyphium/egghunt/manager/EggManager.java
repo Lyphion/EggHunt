@@ -487,6 +487,12 @@ public final class EggManager {
                 continue;
             }
 
+            if (entity.getTicksLived() >= resourceManager.getLifetime() * 20) {
+                entity.remove();
+                toRemove.add(entity);
+                continue;
+            }
+
             final Location location = entity.getLocation();
             if (entity instanceof ArmorStand) {
                 location.add(ARMOR_STAND_OFFSET);
@@ -494,25 +500,25 @@ public final class EggManager {
 
             final World world = location.getWorld();
             for (final Player player : world.getNearbyPlayers(location, 0.5)) {
-                final PersistentDataContainerView container = entity.getPersistentDataContainer();
+                final ItemStack egg = switch (entity) {
+                    case Item item -> item.getItemStack();
+                    case ArmorStand armorStand -> armorStand.getItem(EquipmentSlot.HEAD);
+                    default -> ItemStack.empty();
+                };
 
-                final boolean fake = container.has(NamespacedKeyConstants.FAKE_EGG_KEY);
-                final boolean breakable = container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY);
-
-                final ItemStack egg;
-                if (entity instanceof Item item) {
-                    egg = item.getItemStack();
-                } else if (entity instanceof ArmorStand armorStand) {
-                    egg = armorStand.getItem(EquipmentSlot.HEAD);
-                } else {
+                if (egg.isEmpty()) {
+                    toRemove.add(entity);
+                    entity.remove();
                     break;
                 }
 
-                if (egg.isEmpty())
-                    break;
+                final PersistentDataContainerView container = entity.getPersistentDataContainer();
+                final boolean fake = container.has(NamespacedKeyConstants.FAKE_EGG_KEY);
+                final boolean breakable = container.has(NamespacedKeyConstants.BREAKABLE_EGG_KEY);
 
                 boolean success = handlePickup(player, location, fake, breakable);
                 if (success) {
+                    player.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 0.8F);
                     final HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(egg);
 
                     for (final ItemStack itemStack : remaining.values()) {
@@ -520,7 +526,6 @@ public final class EggManager {
                     }
                 }
 
-                player.playSound(location, Sound.ENTITY_ITEM_PICKUP, 0.5F, 0.8F);
                 toRemove.add(entity);
                 entity.remove();
                 break;
