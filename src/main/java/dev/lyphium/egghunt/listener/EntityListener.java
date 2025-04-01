@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +37,11 @@ public final class EntityListener implements Listener {
     ) {
         this.resourceManager = resourceManager;
         this.eggManager = eggManager;
+    }
+
+    @EventHandler
+    private void onQuit(@NotNull PlayerQuitEvent event) {
+        eggManager.clearSpawnTimer(event.getPlayer().getUniqueId());
     }
 
     @EventHandler

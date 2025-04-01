@@ -298,6 +298,10 @@ public final class EggManager {
         return true;
     }
 
+    public void clearSpawnTimer(@NotNull UUID uuid) {
+        nextSpawns.remove(uuid);
+    }
+
     /**
      * Create an Easter egg item.
      *
