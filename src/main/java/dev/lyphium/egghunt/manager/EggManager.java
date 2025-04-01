@@ -51,12 +51,12 @@ public final class EggManager {
     /**
      * Collection of items to remove when hitting the ground.
      */
-    private final List<Entity> rainItems = new ArrayList<>();
+    private final List<UUID> rainItems = new ArrayList<>();
 
     /**
      * Collection of natural eggs.
      */
-    private final List<Entity> eggs = new ArrayList<>();
+    private final List<UUID> eggs = new ArrayList<>();
 
     private final Random random = new Random(System.currentTimeMillis());
 
@@ -171,7 +171,7 @@ public final class EggManager {
                 final Entity entity = spawnEggEntity(spawn, item, false, breakable, true);
 
                 // Add entity to raining list
-                rainItems.add(entity);
+                rainItems.add(entity.getUniqueId());
             }
         }.runTaskTimer(plugin, 2, 2);
     }
@@ -194,8 +194,12 @@ public final class EggManager {
      * Remove all egg entities.
      */
     public void removeAllEggs() {
-        for (final Entity entity : eggs) {
-            entity.remove();
+        for (final UUID uuid : eggs) {
+            final Entity entity = Bukkit.getEntity(uuid);
+
+            if (entity != null) {
+                entity.remove();
+            }
         }
     }
 
@@ -345,6 +349,7 @@ public final class EggManager {
                 i.setItemStack(item);
                 i.setCanMobPickup(false);
                 i.setCanPlayerPickup(true);
+                i.setPersistent(false);
 
                 // Workaround to modify lifetime of item
                 final ItemEntity itemEntity = ((CraftItem) i).getHandle();
@@ -364,11 +369,13 @@ public final class EggManager {
                 // a.setMarker(true);
                 a.setGravity(falling);
                 a.setDisabledSlots(EquipmentSlot.values());
+                a.setRemoveWhenFarAway(true);
+                a.setPersistent(false);
             });
         };
 
         if (!(entity instanceof Item))
-            eggs.add(entity);
+            eggs.add(entity.getUniqueId());
 
         final PersistentDataContainer container = entity.getPersistentDataContainer();
 
@@ -429,9 +436,15 @@ public final class EggManager {
         if (rainItems.isEmpty())
             return;
 
-        final List<Entity> toRemove = new ArrayList<>();
+        final List<UUID> toRemove = new ArrayList<>();
 
-        for (final Entity entity : rainItems) {
+        for (final UUID uuid : rainItems) {
+            final Entity entity = Bukkit.getEntity(uuid);
+            if (entity == null) {
+                toRemove.add(uuid);
+                continue;
+            }
+
             final Location location = entity.getLocation();
 
             if (entity instanceof ArmorStand)
@@ -466,7 +479,7 @@ public final class EggManager {
                 player.damage(1);
             }
 
-            toRemove.add(entity);
+            toRemove.add(uuid);
         }
 
         rainItems.removeAll(toRemove);
@@ -479,17 +492,19 @@ public final class EggManager {
         if (eggs.isEmpty())
             return;
 
-        final List<Entity> toRemove = new ArrayList<>();
+        final List<UUID> toRemove = new ArrayList<>();
 
-        for (final Entity entity : eggs) {
-            if (entity.isDead()) {
-                toRemove.add(entity);
+        for (final UUID uuid : eggs) {
+            final Entity entity = Bukkit.getEntity(uuid);
+
+            if (entity == null || entity.isDead()) {
+                toRemove.add(uuid);
                 continue;
             }
 
             if (entity.getTicksLived() >= resourceManager.getLifetime() * 20) {
                 entity.remove();
-                toRemove.add(entity);
+                toRemove.add(uuid);
                 continue;
             }
 
@@ -507,7 +522,7 @@ public final class EggManager {
                 };
 
                 if (egg.isEmpty()) {
-                    toRemove.add(entity);
+                    toRemove.add(uuid);
                     entity.remove();
                     break;
                 }
@@ -526,7 +541,7 @@ public final class EggManager {
                     }
                 }
 
-                toRemove.add(entity);
+                toRemove.add(uuid);
                 entity.remove();
                 break;
             }
