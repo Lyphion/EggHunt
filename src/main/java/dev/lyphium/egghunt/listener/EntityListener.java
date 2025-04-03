@@ -8,6 +8,7 @@ import io.papermc.paper.persistence.PersistentDataContainerView;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -17,6 +18,8 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
@@ -135,6 +138,24 @@ public final class EntityListener implements Listener {
 
             // Run command as console
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatCommand);
+        }
+    }
+
+    @EventHandler
+    private void onUnload(@NotNull ChunkUnloadEvent event) {
+        for (final Entity entity : event.getChunk().getEntities()) {
+            if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY)) {
+                entity.remove();
+            }
+        }
+    }
+
+    @EventHandler
+    private void onUnload(@NotNull EntitiesUnloadEvent event) {
+        for (final Entity entity : event.getChunk().getEntities()) {
+            if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY)) {
+                entity.remove();
+            }
         }
     }
 }
