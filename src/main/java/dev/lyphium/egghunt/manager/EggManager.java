@@ -444,7 +444,7 @@ public final class EggManager {
 
         for (final UUID uuid : rainItems) {
             final Entity entity = Bukkit.getEntity(uuid);
-            if (entity == null) {
+            if (entity == null || entity.isDead()) {
                 toRemove.add(uuid);
                 continue;
             }
