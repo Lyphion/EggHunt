@@ -3,6 +3,7 @@ package dev.lyphium.egghunt.command;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
+import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -30,6 +31,11 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
         this.plugin = plugin;
         this.resourceManager = resourceManager;
         this.statisticManager = statisticManager;
+    }
+
+    @Override
+    public String getMinimumPermission() {
+        return PermissionConstants.LEADERBOARD;
     }
 
     @Override

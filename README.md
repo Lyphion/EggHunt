@@ -22,7 +22,7 @@ The configuration of the `drops.yml` and `eggs.yml` can also be done using comma
 
 ## Usage
 
-After checking and configuring the main config an administrator with the `egghunt.admin` permission (or with _OP_) can modify the Easter eggs and drops in game.
+After checking and configuring the main config an administrator with the `egghunt.admin` permission can modify the Easter eggs and drops in game.
 
 The central command for this plugin is `egghunt`. For an overview of all available subcommand use `egghunt help`.
 
@@ -31,10 +31,12 @@ Additional drops can be added with `egghunt drops add item <Minimum> <Maximum> <
 
 Similarly, Easter eggs can be viewed and removed with `egghunt models`. Adding a new item can be done inside the overview inventory by clicking on the desired item in the main inventory.
 
-To test the spawning of Easter eggs, the `egghunt spawn` and `egghunt find` command can be used to spawn a new Easter egg and find it afterward.
+To test the spawning of Easter eggs, the `egghunt spawn` and `egghunt find` command can be used to spawn a new Easter egg and find it afterward (Permission `egghunt.admin`).
+In addition, the `egghunt rain` command can spawn a cloud of eggs, which will fall down, but may break (Permission `egghunt.admin`).
+With the `egghunt fake` command, an explosive egg can be spawned (Permission `egghunt.admin`).
 
-This plugin allows for the modification of the configuration files without a server restart. To reload the configurations use `egghunt reload`.
+This plugin allows for the modification of the configuration files without a server restart. To reload the configurations use `egghunt reload` (Permission `egghunt.admin`).
 
-The `egghunt toggle` command can be used to disable the spawning of Easter eggs temporarily.
+The `egghunt toggle` command can be used to disable the spawning of Easter eggs temporarily for a player or globally (Permission `egghunt.admin`).
 
-A leaderboard with the most collected Easter eggs can be viewed with `egghunt leaderboard`.
+A leaderboard with the most collected Easter eggs can be viewed with `egghunt leaderboard` (Permission `egghunt.leaderboard`).
