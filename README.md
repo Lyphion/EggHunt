@@ -5,6 +5,7 @@
 With the **EggHunt** plugin the players on the server can go on a hunt to find hidden Easter eggs scattered around the world. These Easter eggs will spawn periodically nearby players. Each Easter egg contains a small drop/gift for the player. A leaderboard shows who collected the most Easter eggs. All Easter eggs and drops can be configured in game or via the config.
 
 Placeholders are exposed for the [PlaceholderAPI](https://github.com/PlaceholderAPI/PlaceholderAPI):
+
 - `%egghunt_total_eggs%` (Total Easter eggs found by all players)
 - `%egghunt_player_eggs%` (Easter eggs found by a player)
 
@@ -26,17 +27,17 @@ After checking and configuring the main config an administrator with the `egghun
 
 The central command for this plugin is `egghunt`. For an overview of all available subcommand use `egghunt help`.
 
-The available drop can be viewed via `egghunt drops`. With the opened inventory the player can get a drop (left-click the item) or remove a drop (drop the item).
-Additional drops can be added with `egghunt drops add item <Minimum> <Maximum> <Weight>` or `egghunt drops add command <Command> <Weight>`. For adding an item, hold it in the main hand.
+Subcommands:
 
-Similarly, Easter eggs can be viewed and removed with `egghunt models`. Adding a new item can be done inside the overview inventory by clicking on the desired item in the main inventory.
-
-To test the spawning of Easter eggs, the `egghunt spawn` and `egghunt find` command can be used to spawn a new Easter egg and find it afterward (Permission `egghunt.admin`).
-In addition, the `egghunt rain` command can spawn a cloud of eggs, which will fall down, but may break (Permission `egghunt.admin`).
-With the `egghunt fake` command, an explosive egg can be spawned (Permission `egghunt.admin`).
-
-This plugin allows for the modification of the configuration files without a server restart. To reload the configurations use `egghunt reload` (Permission `egghunt.admin`).
-
-The `egghunt toggle` command can be used to disable the spawning of Easter eggs temporarily for a player or globally (Permission `egghunt.admin`).
-
-A leaderboard with the most collected Easter eggs can be viewed with `egghunt leaderboard` (Permission `egghunt.leaderboard`).
+| Command     | Permission          | Description                                                         |
+|-------------|---------------------|---------------------------------------------------------------------|
+| drops       | egghunt.configure   | Add drops (items and command) of Easter eggs or remove them via GUI |
+| fake        | egghunt.spawn       | Spawn a fake Easter egg near users                                  |
+| find        | egghunt.find        | Highlight nearby Easter eggs                                        |
+| help        | -                   | Show the help page                                                  |
+| leaderboard | egghunt.leaderboard | Show the current leaderboard with most collected Easter eggs        |
+| models      | egghunt.configure   | Add/Remove Easter egg models via GUI                                |
+| rain        | egghunt.spawn       | Spawn a cloud of Easter eggs above user, which will rain down       |
+| reload      | egghunt.configure   | Reload the configuration                                            |
+| spawn       | egghunt.spawn       | Spawn an Easter egg near users                                      |
+| toggle      | egghunt.toggle      | Toggle the spawning of Easter eggs globally or for specific users   |
