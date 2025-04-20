@@ -23,7 +23,8 @@ The configuration of the `drops.yml` and `eggs.yml` can also be done using comma
 
 ## Usage
 
-After checking and configuring the main config an administrator with the `egghunt.admin` permission can modify the Easter eggs and drops in game.
+After checking and configuring the main config an administrator with the `egghunt.configure` permission can modify the Easter eggs and drops in game.
+The `egghunt.admin` permission includes all others.
 
 The central command for this plugin is `egghunt`. For an overview of all available subcommand use `egghunt help`.
 
