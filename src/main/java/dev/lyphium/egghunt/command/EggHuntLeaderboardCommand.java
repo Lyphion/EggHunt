@@ -1,12 +1,19 @@
 package dev.lyphium.egghunt.command;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.util.Tuple;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -16,12 +23,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
 public final class EggHuntLeaderboardCommand implements SubCommand {
 
     private final JavaPlugin plugin;
 
     private final ResourceManager resourceManager;
     private final StatisticManager statisticManager;
+
+    @Getter
+    private final String minimumPermission = PermissionConstants.LEADERBOARD;
+
+    @Getter
+    private final String name = "leaderboard";
 
     public EggHuntLeaderboardCommand(
             @NotNull JavaPlugin plugin,
@@ -33,65 +47,59 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
         this.statisticManager = statisticManager;
     }
 
-    @Override
-    public String getMinimumPermission() {
-        return PermissionConstants.LEADERBOARD;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        return Commands.literal(name)
+                .requires(s -> s.getSender().hasPermission(minimumPermission))
+                .executes(this::handle)
+                .build();
     }
 
-    @Override
-    public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        // Check if arguments have the right amount of members
-        if (args.length != 0)
-            return false;
+    private int handle(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         // Leaderboard is calculated async to relax main thread
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             // Get leaderboard
             final List<Tuple<String, Integer>> leaderboard = statisticManager.getLeaderboard(resourceManager.getLeaderboardSize());
 
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.leaderboard.menu", ColorConstants.DEFAULT)));
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.leaderboard.menu")));
 
             // Send top players
             for (int i = 0; i < leaderboard.size(); i++) {
                 final Tuple<String, Integer> statistic = leaderboard.get(i);
 
                 final TextComponent.Builder builder = Component.text()
-                        .content("» ").color(ColorConstants.DEFAULT)
+                        .content("» ").color(NamedTextColor.GRAY)
                         .append(Component.text("#" + (i + 1), ColorConstants.HIGHLIGHT))
-                        .append(Component.text(": ", ColorConstants.DEFAULT))
-                        .append(Component.text(statistic.getA(), sender instanceof Player && statistic.getA().equals(sender.getName()) ? ColorConstants.SUCCESS : ColorConstants.WHITE))
-                        .append(Component.text(" (", ColorConstants.DEFAULT))
-                        .append(Component.text(statistic.getB(), ColorConstants.ERROR))
-                        .append(Component.text(")", ColorConstants.DEFAULT));
+                        .append(Component.text(": ", NamedTextColor.GRAY))
+                        .append(Component.text(statistic.getA(), executor instanceof Player && statistic.getA().equals(executor.getName()) ? NamedTextColor.GREEN : NamedTextColor.WHITE))
+                        .append(Component.text(" (", NamedTextColor.GRAY))
+                        .append(Component.text(statistic.getB(), NamedTextColor.RED))
+                        .append(Component.text(")", NamedTextColor.GRAY));
 
-                sender.sendMessage(builder.build());
+                executor.sendMessage(builder.build());
             }
 
             // If player is not contained, extend the leaderboard
-            if (sender instanceof Player player && leaderboard.stream().noneMatch(s -> s.getA().equals(sender.getName()))) {
+            if (executor instanceof Player player && leaderboard.stream().noneMatch(s -> s.getA().equals(executor.getName()))) {
                 final Tuple<Integer, Integer> statistic = statisticManager.getStatistic(player.getUniqueId());
 
                 if (statistic.getA() == -1)
                     return;
 
                 final TextComponent.Builder builder = Component.text()
-                        .content("» ").color(ColorConstants.DEFAULT)
+                        .content("» ").color(NamedTextColor.GRAY)
                         .append(Component.text("#" + statistic.getA(), ColorConstants.HIGHLIGHT))
-                        .append(Component.text(": ", ColorConstants.DEFAULT))
-                        .append(Component.text(player.getName(), ColorConstants.SUCCESS))
-                        .append(Component.text(" (", ColorConstants.DEFAULT))
-                        .append(Component.text(statistic.getB(), ColorConstants.ERROR))
-                        .append(Component.text(")", ColorConstants.DEFAULT));
+                        .append(Component.text(": ", NamedTextColor.GRAY))
+                        .append(Component.text(player.getName(), NamedTextColor.GREEN))
+                        .append(Component.text(" (", NamedTextColor.GRAY))
+                        .append(Component.text(statistic.getB(), NamedTextColor.RED))
+                        .append(Component.text(")", NamedTextColor.GRAY));
 
-                sender.sendMessage(builder.build());
+                executor.sendMessage(builder.build());
             }
         });
 
-        return true;
-    }
-
-    @Override
-    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return List.of();
+        return Command.SINGLE_SUCCESS;
     }
 }

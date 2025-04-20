@@ -10,11 +10,11 @@ import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.EggHuntPlaceholderExpansion;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Objects;
 
 public final class EggHunt extends JavaPlugin {
 
@@ -53,9 +53,14 @@ public final class EggHunt extends JavaPlugin {
         getLogger().info("Plugin deactivated");
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private void registerCommands() {
-        new EggHuntCommand(this, resourceManager, eggManager, statisticManager)
-                .register(Objects.requireNonNull(getCommand("egghunt")));
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            final Commands registrar = commands.registrar();
+
+            final EggHuntCommand command = new EggHuntCommand(this, resourceManager, eggManager, statisticManager);
+            registrar.register(command.construct(), EggHuntCommand.DESCRIPTION);
+        });
     }
 
     private void registerListeners() {

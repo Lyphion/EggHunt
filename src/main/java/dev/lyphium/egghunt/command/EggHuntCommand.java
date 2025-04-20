@@ -1,34 +1,30 @@
 package dev.lyphium.egghunt.command;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
-import dev.lyphium.egghunt.util.ColorConstants;
-import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
 import lombok.AccessLevel;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
-import org.bukkit.command.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Main command for managing the plugin.
  */
-public final class EggHuntCommand implements CommandExecutor, TabCompleter {
+@SuppressWarnings("UnstableApiUsage")
+public final class EggHuntCommand {
+
+    public static final String DESCRIPTION = "Central command for egg hunt";
 
     /**
      * Collection of all available sub commands.
      */
     @Getter(AccessLevel.PACKAGE)
-    private final Map<String, SubCommand> subCommands;
+    private final SubCommand[] subCommands;
 
     public EggHuntCommand(
             @NotNull JavaPlugin plugin,
@@ -36,105 +32,28 @@ public final class EggHuntCommand implements CommandExecutor, TabCompleter {
             @NotNull EggManager eggManager,
             @NotNull StatisticManager statisticManager
     ) {
-        this.subCommands = new TreeMap<>(Map.of(
-                "drops", new EggHuntDropsCommand(resourceManager),
-                "fake", new EggHuntFakeCommand(eggManager),
-                "find", new EggHuntFindCommand(resourceManager),
-                "help", new EggHuntHelpCommand(this),
-                "leaderboard", new EggHuntLeaderboardCommand(plugin, resourceManager, statisticManager),
-                "models", new EggHuntModelsCommand(resourceManager),
-                "rain", new EggHuntRainCommand(eggManager),
-                "reload", new EggHuntReloadCommand(plugin, resourceManager, eggManager),
-                "spawn", new EggHuntSpawnCommand(eggManager),
-                "toggle", new EggHuntToggleCommand(eggManager)
-        ));
+        subCommands = new SubCommand[]{
+                new EggHuntDropsCommand(resourceManager),
+                new EggHuntFakeCommand(eggManager),
+                new EggHuntFindCommand(resourceManager),
+                new EggHuntHelpCommand(this),
+                new EggHuntLeaderboardCommand(plugin, resourceManager, statisticManager),
+                new EggHuntModelsCommand(resourceManager),
+                new EggHuntRainCommand(eggManager),
+                new EggHuntReloadCommand(plugin, resourceManager, eggManager),
+                new EggHuntSpawnCommand(eggManager),
+                new EggHuntToggleCommand(eggManager)
+        };
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        // Missing sub command
-        if (args.length == 0) {
-            sender.sendMessage(errorMessage(sender, "help"));
-            return true;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        LiteralArgumentBuilder<CommandSourceStack> cmd = Commands.literal("egghunt");
+
+        for (final SubCommand command : subCommands) {
+            cmd = cmd.then(command.construct());
         }
 
-        // Check if sub command exists
-        final String name = args[0].toLowerCase();
-        if (!subCommands.containsKey(name)) {
-            sender.sendMessage(errorMessage(sender, "help"));
-            return true;
-        }
-
-        final SubCommand subCommand = subCommands.get(name);
-
-        // Check if user has permission
-        if (subCommand.getMinimumPermission() != null && !sender.hasPermission(subCommand.getMinimumPermission())) {
-            sender.sendMessage(errorMessage(sender, "help"));
-            return true;
-        }
-
-        // Run subcommand
-        final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
-        final boolean success = subCommand.handleCommand(sender, remaining);
-
-        // If something bad happened, print error/help message for command
-        if (!success) {
-            sender.sendMessage(errorMessage(sender, name));
-        }
-
-        return true;
-    }
-
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
-        final String name = args[0].toLowerCase();
-
-        // Find matching subcommands
-        if (args.length == 1) {
-            return subCommands.entrySet()
-                    .stream()
-                    .filter(s -> s.getKey().startsWith(name))
-                    .filter(s -> s.getValue().getMinimumPermission() == null || sender.hasPermission(s.getValue().getMinimumPermission()))
-                    .map(Map.Entry::getKey)
-                    .toList();
-        }
-
-        // Check if sub command exists
-        if (!subCommands.containsKey(name)) {
-            return List.of();
-        }
-
-        // Get completion from sub command
-        final SubCommand subCommand = subCommands.get(name);
-        final String[] remaining = Arrays.copyOfRange(args, 1, args.length);
-        return subCommand.handleTabComplete(sender, remaining);
-    }
-
-    /**
-     * Set this object as an executor and tab completer for the command
-     *
-     * @param command Command to be handled.
-     */
-    public void register(@NotNull PluginCommand command) {
-        command.setExecutor(this);
-        command.setTabCompleter(this);
-    }
-
-    /**
-     * Get error/help message for the command.
-     *
-     * @param sender Sender of the command
-     * @param label  Used label of the command
-     * @return Component with formated message.
-     */
-    private Component errorMessage(@NotNull CommandSender sender, @NotNull String label) {
-        final String name = label.toLowerCase();
-        final String key = sender.hasPermission(PermissionConstants.ADMIN) && !name.equals("help")
-                ? "command.egghunt." + name + ".usage.admin"
-                : "command.egghunt." + name + ".usage";
-
-        return TextConstants.PREFIX
-                .append(Component.translatable("command.egghunt.error.wrong_usage", ColorConstants.ERROR, Component.translatable(key)));
+        return cmd.build();
     }
 
 }

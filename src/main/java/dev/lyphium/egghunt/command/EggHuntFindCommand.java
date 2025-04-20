@@ -1,11 +1,17 @@
 package dev.lyphium.egghunt.command;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.ResourceManager;
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.translation.Argument;
 import org.bukkit.Particle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -14,30 +20,35 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
 public final class EggHuntFindCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
+
+    @Getter
+    private final String minimumPermission = PermissionConstants.FIND;
+
+    @Getter
+    private final String name = "find";
 
     public EggHuntFindCommand(@NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 
-    @Override
-    public String getMinimumPermission() {
-        return PermissionConstants.ADMIN;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        return Commands.literal(name)
+                .requires(s -> s.getSender().hasPermission(minimumPermission) && s.getExecutor() instanceof Player)
+                .executes(this::handle)
+                .build();
     }
 
-    @Override
-    public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        // This command can only be used by players
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
-            return true;
-        }
+    private int handle(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
-        // Check if arguments have the right amount of members
-        if (args.length != 0)
-            return false;
+        if (!(executor instanceof Player player)) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            return Command.SINGLE_SUCCESS;
+        }
 
         // Find all nearby eggs
         int range = resourceManager.getMaximumRange();
@@ -58,17 +69,13 @@ public final class EggHuntFindCommand implements SubCommand {
         int amount = items.size();
         final Component msg;
         switch (amount) {
-            case 0 -> msg = Component.translatable("command.egghunt.find.found.zero", ColorConstants.DEFAULT);
-            case 1 -> msg = Component.translatable("command.egghunt.find.found.one", ColorConstants.DEFAULT, Component.text(amount, ColorConstants.HIGHLIGHT));
-            default -> msg = Component.translatable("command.egghunt.find.found.multiple", ColorConstants.DEFAULT, Component.text(amount, ColorConstants.HIGHLIGHT));
+            case 0 -> msg = Component.translatable("egghunt.commands.find.found.zero");
+            case 1 -> msg = Component.translatable("egghunt.commands.find.found.one", Argument.numeric("amount", amount));
+            default -> msg = Component.translatable("egghunt.commands.find.found.multiple", Argument.numeric("amount", amount));
         }
 
-        sender.sendMessage(TextConstants.PREFIX.append(msg));
-        return true;
-    }
+        executor.sendMessage(TextConstants.PREFIX.append(msg));
 
-    @Override
-    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return List.of();
+        return Command.SINGLE_SUCCESS;
     }
 }

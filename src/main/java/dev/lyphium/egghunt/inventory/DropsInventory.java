@@ -10,7 +10,9 @@ import io.papermc.paper.datacomponent.item.ItemLore;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.translation.Argument;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -38,7 +40,7 @@ public final class DropsInventory implements InventoryHolder {
     public DropsInventory(@NotNull ResourceManager resourceManager, @NotNull Locale locale) {
         this.resourceManager = resourceManager;
         this.locale = locale;
-        this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("inventory.drops.title", ColorConstants.ERROR));
+        this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("egghunt.inventory.drops.title"));
 
         setupInventory();
     }
@@ -91,23 +93,24 @@ public final class DropsInventory implements InventoryHolder {
                     lore.add(Component.empty());
 
                 // Add description of amount and weight
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.amount", ColorConstants.DEFAULT,
-                                Component.text(drop.getMinimumAmount(), ColorConstants.ERROR), Component.text(drop.getMaximumAmount(), ColorConstants.ERROR))
-                        .decoration(TextDecoration.ITALIC, false), locale));
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
-                                Component.text(drop.getWeight(), ColorConstants.ERROR))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.amount",
+                                Argument.numeric("minimum", drop.getMinimumAmount()),
+                                Argument.numeric("maximum", drop.getMaximumAmount()))
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.weight",
+                                Argument.numeric("weight", drop.getWeight()))
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
-                                Component.text(probability, ColorConstants.HIGHLIGHT))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.probability",
+                                Argument.numeric("probability", probability))
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 lore.add(Component.empty());
 
                 // Add description on how to delete it
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.eggs.delete")
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
@@ -128,25 +131,25 @@ public final class DropsInventory implements InventoryHolder {
                 final List<Component> lore = new ArrayList<>();
 
                 // Add command as core
-                lore.add(Component.text("» ", ColorConstants.DEFAULT).decoration(TextDecoration.ITALIC, false)
-                        .append(Component.translatable(drop.getCommandDrop(), ColorConstants.WHITE).decoration(TextDecoration.ITALIC, false)));
+                lore.add(Component.text("» ", NamedTextColor.GRAY).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                        .append(Component.translatable(drop.getCommandDrop(), NamedTextColor.WHITE).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)));
                 lore.add(Component.empty());
 
                 // Add description of amount and weight
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.weight", ColorConstants.DEFAULT,
-                                Component.text(drop.getWeight(), ColorConstants.ERROR))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.weight",
+                                Argument.numeric("weight", drop.getWeight()))
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.drops.probability", ColorConstants.DEFAULT,
-                                Component.text(probability, ColorConstants.HIGHLIGHT))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.probability",
+                                Argument.numeric("probability", probability))
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 lore.add(Component.empty());
 
                 // Add description on how to delete it
-                lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                        .decoration(TextDecoration.ITALIC, false), locale));
+                lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.eggs.delete")
+                        .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
@@ -156,11 +159,11 @@ public final class DropsInventory implements InventoryHolder {
 
         // Add page switching items
         final ItemStack previous = new ItemStack(Material.ARROW);
-        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT));
+        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", NamedTextColor.GRAY));
         inventory.setItem(PAGE_SIZE, previous);
 
         final ItemStack next = new ItemStack(Material.ARROW);
-        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT));
+        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", NamedTextColor.GRAY));
         inventory.setItem(PAGE_SIZE + 8, next);
     }
 

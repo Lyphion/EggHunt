@@ -6,8 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.TranslationRegistry;
 import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -59,7 +59,7 @@ public final class ResourceManager {
     private BukkitTask saveTask;
 
     private String languageOverride;
-    private TranslationRegistry translationRegistry;
+    private MiniMessageTranslationStore translationStore;
 
     public ResourceManager(@NotNull JavaPlugin plugin) {
         this.plugin = plugin;
@@ -311,26 +311,26 @@ public final class ResourceManager {
      * Register languages from language files.
      */
     private void registerLanguages() {
-        if (translationRegistry != null)
-            GlobalTranslator.translator().removeSource(translationRegistry);
+        if (translationStore != null)
+            GlobalTranslator.translator().removeSource(translationStore);
 
-        translationRegistry = TranslationRegistry.create(Key.key("egghunt"));
-        translationRegistry.defaultLocale(languageOverride.equals("german") ? Locale.GERMAN : Locale.ENGLISH);
+        translationStore = MiniMessageTranslationStore.create(Key.key("egghunt"));
+        translationStore.defaultLocale(languageOverride.equals("german") ? Locale.GERMAN : Locale.ENGLISH);
 
         if (languageOverride.equals("german")) {
             final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
-            translationRegistry.registerAll(Locale.GERMAN, bundle, true);
+            translationStore.registerAll(Locale.GERMAN, bundle, true);
         } else if (languageOverride.equals("english")) {
             final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
-            translationRegistry.registerAll(Locale.ENGLISH, bundle, true);
+            translationStore.registerAll(Locale.ENGLISH, bundle, true);
         } else {
             ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
-            translationRegistry.registerAll(Locale.ENGLISH, bundle, true);
+            translationStore.registerAll(Locale.ENGLISH, bundle, true);
             bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
-            translationRegistry.registerAll(Locale.GERMAN, bundle, true);
+            translationStore.registerAll(Locale.GERMAN, bundle, true);
         }
 
-        GlobalTranslator.translator().addSource(translationRegistry);
+        GlobalTranslator.translator().addSource(translationStore);
     }
 
     /**

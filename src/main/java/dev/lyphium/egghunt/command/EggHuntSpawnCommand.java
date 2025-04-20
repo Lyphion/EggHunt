@@ -1,70 +1,95 @@
 package dev.lyphium.egghunt.command;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
 public final class EggHuntSpawnCommand implements SubCommand {
 
     private final EggManager eggManager;
+
+    @Getter
+    private final String minimumPermission = PermissionConstants.SPAWN;
+
+    @Getter
+    private final String name = "spawn";
 
     public EggHuntSpawnCommand(@NotNull EggManager eggManager) {
         this.eggManager = eggManager;
     }
 
-    @Override
-    public String getMinimumPermission() {
-        return PermissionConstants.ADMIN;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        return Commands.literal(name)
+                .requires(s -> s.getSender().hasPermission(minimumPermission))
+                .executes(this::handleSelf)
+                .then(Commands.argument("player", ArgumentTypes.players())
+                        .executes(this::handleOther)
+                )
+                .build();
     }
 
-    @Override
-    public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        // This command can only be used by players if no arguments are provided
-        if (!(sender instanceof Player) && args.length != 1) {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
-            return false;
+    private int handleSelf(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
+
+        if (!(executor instanceof Player player)) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            return Command.SINGLE_SUCCESS;
         }
 
-        // Check if arguments have the right amount of members
-        if (args.length > 1)
-            return false;
-
-        // Get target player, either self or provided one
-        final Player target;
-        if (args.length == 0) {
-            target = (Player) sender;
-        } else {
-            target = Bukkit.getPlayerExact(args[0]);
-
-            if (target == null) {
-                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.unknown_user", ColorConstants.WARNING,
-                        Component.text(args[0], ColorConstants.HIGHLIGHT))));
-                return true;
-            }
-        }
-
-        final boolean success = eggManager.spawn(target.getLocation(), true, false);
+        final boolean success = eggManager.spawn(player.getLocation(), true, false);
 
         if (success) {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.success", ColorConstants.SUCCESS)));
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.spawn.success")));
         } else {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.spawn.failure", ColorConstants.WARNING)));
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.spawn.failure")));
         }
 
-        return true;
+        return Command.SINGLE_SUCCESS;
     }
 
-    @Override
-    public @Nullable List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return args.length == 1 ? null : List.of();
+    private int handleOther(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
+
+        final List<Player> targets;
+        try {
+            targets = ctx.getArgument("player", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource());
+        } catch (CommandSyntaxException e) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        if (targets.isEmpty()) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        boolean success = true;
+        for (final Player target : targets) {
+            success &= eggManager.spawn(target.getLocation(), true, false);
+        }
+
+        if (success) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.spawn.success")));
+        } else {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.spawn.failure")));
+        }
+
+        return Command.SINGLE_SUCCESS;
     }
 }

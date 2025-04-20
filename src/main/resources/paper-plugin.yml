@@ -1,0 +1,41 @@
+name: EggHunt
+version: '${version}'
+main: dev.lyphium.egghunt.EggHunt
+api-version: '1.21.4'
+prefix: EggHunt
+load: POSTWORLD
+author: Lyphion
+description: Simple Easter egg hunt plugin
+website: https://github.com/Lyphion/EggHunt
+
+dependencies:
+  server:
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+
+permissions:
+  egghunt.admin:
+    description: Admin permission
+    default: op
+    children:
+      - egghunt.configure
+      - egghunt.find
+      - egghunt.leaderboard
+      - egghunt.spawn
+      - egghunt.toggle
+  egghunt.configure:
+    description: Permission to configure eggs and drops
+    default: op
+  egghunt.find:
+    description: Permission to easily find eggs
+    default: op
+  egghunt.leaderboard:
+    description: Permission to view leaderboard
+    default: not op
+  egghunt.spawn:
+    description: Permission to spawn eggs
+    default: op
+  egghunt.toggle:
+    description: Permission to toggle the spawning of eggs
+    default: op

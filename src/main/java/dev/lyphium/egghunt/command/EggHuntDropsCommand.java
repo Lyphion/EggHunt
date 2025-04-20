@@ -1,140 +1,146 @@
 package dev.lyphium.egghunt.command;
 
+import com.google.common.collect.Range;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.data.EasterEggDrop;
 import dev.lyphium.egghunt.inventory.DropsInventory;
 import dev.lyphium.egghunt.manager.ResourceManager;
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.range.IntegerRangeProvider;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
-
+@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
 public final class EggHuntDropsCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
+
+    @Getter
+    private final String minimumPermission = PermissionConstants.CONFIGURE;
+
+    @Getter
+    private final String name = "drops";
 
     public EggHuntDropsCommand(@NotNull ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 
-    @Override
-    public String getMinimumPermission() {
-        return PermissionConstants.ADMIN;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        return Commands.literal(name)
+                .requires(s -> s.getSender().hasPermission(minimumPermission))
+                .executes(this::handleInventory)
+                .then(Commands.literal("add")
+                        .then(Commands.literal("item")
+                                .then(Commands.argument("amount", ArgumentTypes.integerRange())
+                                        .then(Commands.argument("weight", IntegerArgumentType.integer(1))
+                                                .executes(this::handleItem)
+                                                .then(Commands.argument("item", ArgumentTypes.itemStack())
+                                                        .executes(this::handleInlineItem))
+                                        )
+                                )
+                        )
+                        .then(Commands.literal("command")
+                                .then(Commands.argument("weight", IntegerArgumentType.integer(1))
+                                        .then(Commands.argument("command", StringArgumentType.greedyString())
+                                                .executes(this::handleCommand)
+                                        )
+                                )
+                        )
+                )
+                .build();
     }
 
-    @Override
-    public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        // This command can only be used by players
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.error.only_player", ColorConstants.WARNING)));
-            return true;
+    private int handleInventory(CommandContext<CommandSourceStack> ctx) {
+        final Entity executor = ctx.getSource().getExecutor();
+
+        if (!(executor instanceof Player player)) {
+            if (executor != null)
+                executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            return Command.SINGLE_SUCCESS;
         }
 
-        // Open overview if no other arguments are provided
-        if (args.length == 0) {
-            player.openInventory(new DropsInventory(resourceManager, player.locale()).getInventory());
-            return true;
-        }
-
-        // Check if arguments have the right amount of members
-        if (args.length < 3)
-            return false;
-
-        // Currently only adding is supported
-        if (!args[0].equalsIgnoreCase("add"))
-            return false;
-
-        // Check if an item should be added
-        if (args[1].equalsIgnoreCase("item")) {
-            // Check if arguments have the right amount of members
-            if (args.length != 5)
-                return false;
-
-            // Check if provided numbers are valid
-            if (!args[2].matches("\\d+") || !args[3].matches("\\d+") || !args[4].matches("\\d+")) {
-                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_format", ColorConstants.ERROR)));
-                return true;
-            }
-
-            // Check if item in hand is valid
-            final ItemStack item = player.getInventory().getItemInMainHand().asOne();
-            if (item.getType() == Material.AIR) {
-                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_item", ColorConstants.ERROR)));
-                return true;
-            }
-
-            final int minimum = Integer.parseUnsignedInt(args[2]);
-            final int maximum = Integer.parseUnsignedInt(args[3]);
-
-            // Check if range is valid
-            if (minimum > maximum) {
-                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.invalid_range", ColorConstants.ERROR)));
-                return true;
-            }
-
-            final int weight = Integer.parseUnsignedInt(args[4]);
-
-            // Create and save drop
-            final EasterEggDrop drop = new EasterEggDrop(item, minimum, maximum, weight);
-            resourceManager.addDrop(drop);
-
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
-        } else if (args[1].equalsIgnoreCase("command")) {
-            // Check if arguments have the right amount of members
-            if (args.length < 4)
-                return false;
-
-            // Check if provided number are valid
-            if (!args[args.length - 1].matches("\\d+")) {
-                sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.wrong_format", ColorConstants.ERROR)));
-                return true;
-            }
-
-            // Build string from parts
-            final String[] commandParts = Arrays.copyOfRange(args, 2, args.length - 1);
-            String command = String.join(" ", commandParts);
-            if (command.startsWith("\"")) {
-                command = command.substring(1);
-                if (command.endsWith("\""))
-                    command = command.substring(0, command.length() - 1);
-            }
-
-            final int weight = Integer.parseUnsignedInt(args[args.length - 1]);
-
-            // Create and save drop
-            final EasterEggDrop drop = new EasterEggDrop(command, weight);
-            resourceManager.addDrop(drop);
-
-            sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.drops.success", ColorConstants.SUCCESS)));
-        } else {
-            return false;
-        }
-
-        return true;
+        player.openInventory(new DropsInventory(resourceManager, player.locale()).getInventory());
+        return Command.SINGLE_SUCCESS;
     }
 
-    @Override
-    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        final String name = args[0].toLowerCase();
+    private int handleItem(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
-        return switch (args.length) {
-            case 1 -> Stream.of("add").filter(s -> s.startsWith(name)).toList();
-            case 2 -> {
-                if (!name.equals("add"))
-                    yield List.of();
+        if (!(executor instanceof Player player)) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            return Command.SINGLE_SUCCESS;
+        }
 
-                final String category = args[1].toLowerCase();
-                yield Stream.of("item", "command").filter(s -> s.startsWith(category)).toList();
-            }
-            default -> List.of();
-        };
+        final Range<Integer> amount = ctx.getArgument("amount", IntegerRangeProvider.class).range();
+        final int weight = IntegerArgumentType.getInteger(ctx, "weight");
+
+        if (!amount.hasLowerBound() || !amount.hasUpperBound() || amount.lowerEndpoint() < 1) {
+            player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_range")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        // Check if item in hand is valid
+        final ItemStack item = player.getInventory().getItemInMainHand().asOne();
+        if (item.isEmpty()) {
+            player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_item")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        final EasterEggDrop drop = new EasterEggDrop(item, amount.lowerEndpoint(), amount.upperEndpoint(), weight);
+        resourceManager.addDrop(drop);
+
+        player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int handleInlineItem(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
+
+        final Range<Integer> amount = ctx.getArgument("amount", IntegerRangeProvider.class).range();
+        final int weight = IntegerArgumentType.getInteger(ctx, "weight");
+
+        if (!amount.hasLowerBound() || !amount.hasUpperBound() || amount.lowerEndpoint() < 1) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_range")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        final ItemStack item = ctx.getArgument("item", ItemStack.class);
+        if (item.isEmpty()) {
+            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_item")));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        final EasterEggDrop drop = new EasterEggDrop(item, amount.lowerEndpoint(), amount.upperEndpoint(), weight);
+        resourceManager.addDrop(drop);
+
+        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int handleCommand(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
+
+        final int weight = IntegerArgumentType.getInteger(ctx, "weight");
+        final String command = StringArgumentType.getString(ctx, "command");
+
+        final EasterEggDrop drop = new EasterEggDrop(command, weight);
+        resourceManager.addDrop(drop);
+
+        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+        return Command.SINGLE_SUCCESS;
     }
 }

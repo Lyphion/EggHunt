@@ -1,51 +1,56 @@
 package dev.lyphium.egghunt.command;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.TextConstants;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
-
+@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
 public final class EggHuntHelpCommand implements SubCommand {
 
     private final EggHuntCommand parent;
+
+    @Getter
+    private final String name = "help";
 
     public EggHuntHelpCommand(EggHuntCommand parent) {
         this.parent = parent;
     }
 
-    @Override
-    public boolean handleCommand(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        // Check if arguments have the right amount of members
-        if (args.length > 0)
-            return false;
+    public LiteralCommandNode<CommandSourceStack> construct() {
+        return Commands.literal(name)
+                .executes(this::handle)
+                .build();
+    }
 
-        sender.sendMessage(TextConstants.PREFIX.append(Component.translatable("command.egghunt.help.menu", ColorConstants.DEFAULT)));
+    private int handle(CommandContext<CommandSourceStack> ctx) {
+        final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
+
+        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.help.menu")));
 
         // Format all sub commands, and filter with missing permission
-        for (final Map.Entry<String, SubCommand> entry : parent.getSubCommands().entrySet()) {
-            if (entry.getValue().getMinimumPermission() != null && !sender.hasPermission(entry.getValue().getMinimumPermission()))
+        for (final SubCommand command : parent.getSubCommands()) {
+            if (command.getMinimumPermission() != null && !executor.hasPermission(command.getMinimumPermission()))
                 continue;
 
             final TextComponent.Builder builder = Component.text()
-                    .content("» ").color(ColorConstants.DEFAULT)
-                    .append(Component.text(entry.getKey(), ColorConstants.HIGHLIGHT).clickEvent(ClickEvent.suggestCommand("/egghunt " + entry.getKey())))
-                    .append(Component.text(": ", ColorConstants.DEFAULT))
-                    .append(Component.translatable("command.egghunt." + entry.getKey() + ".description", ColorConstants.WHITE));
+                    .content("» ").color(NamedTextColor.GRAY)
+                    .append(Component.text(command.getName(), ColorConstants.HIGHLIGHT).clickEvent(ClickEvent.suggestCommand("/egghunt " + command.getName())))
+                    .append(Component.text(": ", NamedTextColor.GRAY))
+                    .append(Component.translatable("egghunt.commands." + command.getName() + ".description", NamedTextColor.WHITE));
 
-            sender.sendMessage(builder.build());
+            executor.sendMessage(builder.build());
         }
 
-        return true;
-    }
-
-    @Override
-    public List<String> handleTabComplete(@NotNull CommandSender sender, @NotNull String @NotNull [] args) {
-        return List.of();
+        return Command.SINGLE_SUCCESS;
     }
 }

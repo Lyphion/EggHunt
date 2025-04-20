@@ -1,6 +1,5 @@
 package dev.lyphium.egghunt.manager;
 
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.datacomponent.DataComponentTypes;
@@ -8,9 +7,10 @@ import io.papermc.paper.datacomponent.item.ItemLore;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.text.minimessage.translation.Argument;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import org.bukkit.*;
@@ -33,9 +33,9 @@ import java.util.*;
 
 public final class EggManager {
 
-    public static final Component USAGE_DESCRIPTION = Component.translatable("tutorial.socialInteractions.description", ColorConstants.DEFAULT,
+    public static final Component USAGE_DESCRIPTION = Component.translatable("tutorial.socialInteractions.description", NamedTextColor.GRAY,
                     Component.keybind("key.sneak").append(Component.text("+")).append(Component.keybind("key.mouse.left")))
-            .decoration(TextDecoration.ITALIC, false);
+            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
 
     public static final Vector ARMOR_STAND_OFFSET = new Vector(0, 1.67, 0);
 
@@ -126,8 +126,7 @@ public final class EggManager {
                 continue;
 
             player.playSound(resourceManager.getSpawnSound());
-            final String format = Objects.requireNonNull(GlobalTranslator.translator().translate("spawn.egg", player.locale())).format(null);
-            player.sendActionBar(MiniMessage.miniMessage().deserialize(format));
+            player.sendActionBar(Component.translatable("egghunt.spawn.egg"));
         }
 
         return true;
@@ -256,9 +255,12 @@ public final class EggManager {
         if (count % resourceManager.getMilestone() == 0) {
             shootFirework = true;
 
+            final TextComponent message = TextConstants.PREFIX.append(Component.translatable("egghunt.announcement.leaderboard.factor",
+                    Argument.component("name", player.displayName()),
+                    Argument.numeric("count", count)));
+
             // Notify all player
-            Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.factor", ColorConstants.DEFAULT,
-                    player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR)))));
+            Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(message));
         }
 
         // Check if player reached rank 1
@@ -266,10 +268,13 @@ public final class EggManager {
         if (newRank == 1 && oldRank != newRank) {
             shootFirework = true;
 
+            final TextComponent message = TextConstants.PREFIX.append(Component.translatable("egghunt.announcement.leaderboard.change",
+                    Argument.component("name", player.displayName()),
+                    Argument.numeric("count", count)));
+
             // Notify all player
             Bukkit.getOnlinePlayers().forEach(p -> {
-                p.sendMessage(TextConstants.PREFIX.append(Component.translatable("announcement.leaderboard.change", ColorConstants.DEFAULT,
-                        player.displayName().color(ColorConstants.HIGHLIGHT), Component.text(count, ColorConstants.ERROR))));
+                p.sendMessage(message);
                 p.playSound(resourceManager.getLeaderboardSound());
             });
         }

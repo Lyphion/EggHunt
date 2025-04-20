@@ -2,12 +2,12 @@ package dev.lyphium.egghunt.inventory;
 
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
-import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
@@ -39,7 +39,7 @@ public final class EasterEggInventory implements InventoryHolder {
     public EasterEggInventory(@NotNull ResourceManager resourceManager, @NotNull Locale locale) {
         this.resourceManager = resourceManager;
         this.locale = locale;
-        this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("inventory.eggs.title", ColorConstants.ERROR));
+        this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("egghunt.inventory.eggs.title"));
 
         setupInventory();
     }
@@ -86,8 +86,8 @@ public final class EasterEggInventory implements InventoryHolder {
                 lore.add(Component.empty());
 
             // Add description on how to delete it
-            lore.add(GlobalTranslator.render(Component.translatable("inventory.eggs.delete", ColorConstants.DEFAULT, Component.keybind("key.drop"))
-                    .decoration(TextDecoration.ITALIC, false), locale));
+            lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.eggs.delete")
+                    .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
             item.setData(DataComponentTypes.LORE, ItemLore.lore(lore));
 
@@ -96,11 +96,11 @@ public final class EasterEggInventory implements InventoryHolder {
 
         // Add page switching items
         final ItemStack previous = new ItemStack(Material.ARROW);
-        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", ColorConstants.DEFAULT));
+        previous.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.previous_page", NamedTextColor.GRAY));
         inventory.setItem(PAGE_SIZE, previous);
 
         final ItemStack next = new ItemStack(Material.ARROW);
-        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", ColorConstants.DEFAULT));
+        next.setData(DataComponentTypes.ITEM_NAME, Component.translatable("spectatorMenu.next_page", NamedTextColor.GRAY));
         inventory.setItem(PAGE_SIZE + 8, next);
     }
 
