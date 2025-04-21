@@ -115,6 +115,15 @@ public final class EasterEggDrop {
          * @n -> Nearest other player, or self, if only one player is online
          */
 
+        // Handle if placeholder is at the end of the command
+        if (command.endsWith(" @p"))
+            command = command.substring(0, command.length() - 2) + player.getName();
+        else if (command.endsWith(" @r"))
+            command = command.substring(0, command.length() - 2) + randomPlayer.getName();
+        else if (command.endsWith(" @n"))
+            command = command.substring(0, command.length() - 2) + target.getName();
+
+        // Handle inline placeholders
         return command
                 .replace(" @p ", ' ' + player.getName() + ' ')
                 .replace(" @r ", ' ' + randomPlayer.getName() + ' ')
