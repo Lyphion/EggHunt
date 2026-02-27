@@ -19,11 +19,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntLeaderboardCommand implements SubCommand {
 
     private final JavaPlugin plugin;
@@ -38,9 +37,9 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
     private final String name = "leaderboard";
 
     public EggHuntLeaderboardCommand(
-            @NotNull JavaPlugin plugin,
-            @NotNull ResourceManager resourceManager,
-            @NotNull StatisticManager statisticManager
+            JavaPlugin plugin,
+            ResourceManager resourceManager,
+            StatisticManager statisticManager
     ) {
         this.plugin = plugin;
         this.resourceManager = resourceManager;

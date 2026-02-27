@@ -17,7 +17,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,26 +42,31 @@ public final class ResourceManager {
     private int totalWeight;
     private final List<EasterEggDrop> drops = new ArrayList<>();
 
-    private Sound spawnSound, openSound, leaderboardSound, breakSound;
+    private Sound spawnSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_PLOP, Sound.Source.NEUTRAL, 1.0f, 1.0f),
+            openSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_CRACK, Sound.Source.NEUTRAL, 1.0f, 1.0f),
+            leaderboardSound = Sound.sound(org.bukkit.Sound.ENTITY_FIREWORK_ROCKET_TWINKLE_FAR, Sound.Source.NEUTRAL, 1.0f, 1.0f),
+            breakSound = Sound.sound(org.bukkit.Sound.ENTITY_TURTLE_EGG_BREAK, Sound.Source.NEUTRAL, 1.0f, 1.0f);
 
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
     private int lifetime;
     private int minimumLocations;
 
-    private EntityMode entityMode;
+    private EntityMode entityMode = EntityMode.ITEM;
 
     private int leaderboardSize, milestone;
 
     private int rainRadius, rainOffset, rainAmount;
     private double rainBreakProbability;
 
+    @Nullable
     private BukkitTask saveTask;
 
-    private String languageOverride;
+    private String languageOverride = "none";
+    @Nullable
     private MiniMessageTranslationStore translationStore;
 
-    public ResourceManager(@NotNull JavaPlugin plugin) {
+    public ResourceManager(JavaPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -70,7 +75,7 @@ public final class ResourceManager {
      *
      * @return Random Easter egg item.
      */
-    public @NotNull ItemStack getRandomEgg() {
+    public ItemStack getRandomEgg() {
         if (eggs.isEmpty()) {
             // Backup if no eggs are registered
             return new ItemStack(Material.EGG);
@@ -84,7 +89,7 @@ public final class ResourceManager {
      *
      * @param item Easter egg item to add
      */
-    public void addEgg(@NotNull ItemStack item) {
+    public void addEgg(ItemStack item) {
         eggs.add(item);
         saveResources();
     }
@@ -94,7 +99,7 @@ public final class ResourceManager {
      *
      * @param item Easter egg item to add
      */
-    public void removeEgg(@NotNull ItemStack item) {
+    public void removeEgg(ItemStack item) {
         eggs.remove(item);
         saveResources();
     }
@@ -105,7 +110,7 @@ public final class ResourceManager {
      * @param material Material (block) to check
      * @return {@code true} if material is valid.
      */
-    public boolean checkIfValidBlock(@NotNull Material material) {
+    public boolean checkIfValidBlock(Material material) {
         return validBlocks.contains(material);
     }
 
@@ -114,7 +119,7 @@ public final class ResourceManager {
      *
      * @return Random drop from pool.
      */
-    public @NotNull EasterEggDrop getRandomDrop() {
+    public EasterEggDrop getRandomDrop() {
         // Check if at least one item is registered
         if (totalWeight == 0)
             // Backup if no drops are registered
@@ -140,7 +145,7 @@ public final class ResourceManager {
      *
      * @param drop Drop to be added
      */
-    public void addDrop(@NotNull EasterEggDrop drop) {
+    public void addDrop(EasterEggDrop drop) {
         drops.add(drop);
 
         // Sort drops by weight
@@ -155,9 +160,9 @@ public final class ResourceManager {
     /**
      * Remove drop by id from pool
      *
-     * @param uuid Id of the drop
+     * @param uuid ID of the drop
      */
-    public void removeDrop(@NotNull UUID uuid) {
+    public void removeDrop(UUID uuid) {
         // Remove matching drop
         drops.removeIf(drop -> drop.getUuid().equals(uuid));
 
@@ -267,9 +272,9 @@ public final class ResourceManager {
             final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : 1;
             final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
 
-            if (itemData instanceof ItemStack item && minimumData instanceof Integer minimum
-                    && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(item.asOne(), minimum, maximum, weight));
+            if (itemData instanceof String s && minimumData instanceof Integer minimum
+                && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
+                drops.add(new EasterEggDrop(Bukkit.getItemFactory().createItemStack(s), minimum, maximum, weight));
             }
         }
 
@@ -317,16 +322,18 @@ public final class ResourceManager {
         translationStore = MiniMessageTranslationStore.create(Key.key("egghunt"));
         translationStore.defaultLocale(languageOverride.equals("german") ? Locale.GERMAN : Locale.ENGLISH);
 
+        final ResourceBundle.Control control = UTF8ResourceBundleControl.utf8ResourceBundleControl();
+
         if (languageOverride.equals("german")) {
-            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, control);
             translationStore.registerAll(Locale.GERMAN, bundle, true);
         } else if (languageOverride.equals("english")) {
-            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, control);
             translationStore.registerAll(Locale.ENGLISH, bundle, true);
         } else {
-            ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, UTF8ResourceBundleControl.get());
+            ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, control);
             translationStore.registerAll(Locale.ENGLISH, bundle, true);
-            bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, UTF8ResourceBundleControl.get());
+            bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, control);
             translationStore.registerAll(Locale.GERMAN, bundle, true);
         }
 
@@ -348,7 +355,7 @@ public final class ResourceManager {
         for (final EasterEggDrop drop : drops) {
             if (drop.getItemDrop() != null) {
                 final HashMap<String, Object> map = new HashMap<>();
-                map.put("Item", drop.getItemDrop());
+                map.put("Item", drop.getItemDrop().getType().key() + drop.getItemDrop().getItemMeta().getAsComponentString());
                 map.put("Minimum", drop.getMinimumAmount());
                 map.put("Maximum", drop.getMaximumAmount());
                 map.put("Weight", drop.getWeight());
@@ -384,7 +391,7 @@ public final class ResourceManager {
      * @param time String from which the time should be extracted
      * @return Duration in seconds.
      */
-    private int toSeconds(@NotNull String time) {
+    private int toSeconds(String time) {
         final String[] parts = time.split(":");
         int seconds = 0;
 
@@ -404,7 +411,7 @@ public final class ResourceManager {
      * @param path Path of the config
      * @return Loaded config of the file.
      */
-    private @NotNull FileConfiguration loadConfig(@NotNull String path) {
+    private FileConfiguration loadConfig(String path) {
         // Save default config
         final File file = new File(plugin.getDataFolder(), path);
         if (!file.exists()) {

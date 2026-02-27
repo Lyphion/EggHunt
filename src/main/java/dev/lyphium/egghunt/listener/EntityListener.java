@@ -22,7 +22,6 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -35,20 +34,20 @@ public final class EntityListener implements Listener {
     private final EggManager eggManager;
 
     public EntityListener(
-            @NotNull ResourceManager resourceManager,
-            @NotNull EggManager eggManager
+            ResourceManager resourceManager,
+            EggManager eggManager
     ) {
         this.resourceManager = resourceManager;
         this.eggManager = eggManager;
     }
 
     @EventHandler
-    private void onQuit(@NotNull PlayerQuitEvent event) {
+    private void onQuit(PlayerQuitEvent event) {
         eggManager.clearSpawnTimer(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
-    private void onItemPickup(@NotNull EntityPickupItemEvent event) {
+    private void onItemPickup(EntityPickupItemEvent event) {
         final Item item = event.getItem();
         final PersistentDataContainerView container = item.getPersistentDataContainer();
 
@@ -72,7 +71,7 @@ public final class EntityListener implements Listener {
     }
 
     @EventHandler
-    private void onInventoryPickup(@NotNull InventoryPickupItemEvent event) {
+    private void onInventoryPickup(InventoryPickupItemEvent event) {
         final Item item = event.getItem();
 
         // Only player should be able to pick up egg
@@ -84,7 +83,7 @@ public final class EntityListener implements Listener {
     }
 
     @EventHandler
-    private void onInteract(@NotNull PlayerInteractEvent event) {
+    private void onInteract(PlayerInteractEvent event) {
         final ItemStack item = event.getItem();
 
         // We only care for eggs
@@ -142,7 +141,7 @@ public final class EntityListener implements Listener {
     }
 
     @EventHandler
-    private void onUnload(@NotNull ChunkUnloadEvent event) {
+    private void onUnload(ChunkUnloadEvent event) {
         for (final Entity entity : event.getChunk().getEntities()) {
             if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY)) {
                 entity.remove();
@@ -151,7 +150,7 @@ public final class EntityListener implements Listener {
     }
 
     @EventHandler
-    private void onUnload(@NotNull EntitiesUnloadEvent event) {
+    private void onUnload(EntitiesUnloadEvent event) {
         for (final Entity entity : event.getChunk().getEntities()) {
             if (entity.getPersistentDataContainer().has(NamespacedKeyConstants.NATURAL_EGG_KEY)) {
                 entity.remove();

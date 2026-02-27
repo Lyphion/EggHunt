@@ -13,14 +13,13 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
 public final class InventoryListener implements Listener {
 
     @EventHandler
-    private void onInventoryClick(@NotNull InventoryClickEvent event) {
+    private void onInventoryClick(InventoryClickEvent event) {
         final HumanEntity human = event.getWhoClicked();
         final Inventory inv = event.getInventory();
         final int slot = event.getRawSlot();

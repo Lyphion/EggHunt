@@ -14,7 +14,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntHelpCommand implements SubCommand {
 
     private final EggHuntCommand parent;

@@ -13,9 +13,8 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntModelsCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
@@ -26,7 +25,7 @@ public final class EggHuntModelsCommand implements SubCommand {
     @Getter
     private final String name = "models";
 
-    public EggHuntModelsCommand(@NotNull ResourceManager resourceManager) {
+    public EggHuntModelsCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 

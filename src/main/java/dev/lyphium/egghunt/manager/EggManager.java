@@ -26,7 +26,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -72,7 +71,7 @@ public final class EggManager {
     @Getter
     private final Set<UUID> blacklist = new HashSet<>();
 
-    public EggManager(@NotNull JavaPlugin plugin, @NotNull ResourceManager resourceManager, @NotNull StatisticManager statisticManager) {
+    public EggManager(JavaPlugin plugin, ResourceManager resourceManager, StatisticManager statisticManager) {
         this.plugin = plugin;
         this.resourceManager = resourceManager;
         this.statisticManager = statisticManager;
@@ -99,7 +98,7 @@ public final class EggManager {
      * @param location Center of the spawning area
      * @return {@code true} if egg was spawned
      */
-    public boolean spawn(@NotNull Location location) {
+    public boolean spawn(Location location) {
         return spawn(location, false, false);
     }
 
@@ -110,7 +109,7 @@ public final class EggManager {
      * @param fake     Whether the egg is fake
      * @return {@code true} if egg was spawned
      */
-    public boolean spawn(@NotNull Location location, boolean ignoreMinimum, boolean fake) {
+    public boolean spawn(Location location, boolean ignoreMinimum, boolean fake) {
         // Get spawning space, if none was found to nothing
         final Location spawn = findSpawnLocation(location, ignoreMinimum);
         if (spawn == null)
@@ -137,7 +136,7 @@ public final class EggManager {
      *
      * @param location Center below the cloud
      */
-    public void rain(@NotNull Location location) {
+    public void rain(Location location) {
         final Location center = location.clone().add(0, resourceManager.getRainOffset(), 0);
         final World world = location.getWorld();
         final int radius = resourceManager.getRainRadius();
@@ -180,7 +179,7 @@ public final class EggManager {
      *
      * @param uuid Player to reset
      */
-    public void resetSpawnTimer(@NotNull UUID uuid) {
+    public void resetSpawnTimer(UUID uuid) {
         final int minimumDuration = resourceManager.getMinimumDuration();
         final int maximumDuration = resourceManager.getMaximumDuration();
 
@@ -211,7 +210,7 @@ public final class EggManager {
      * @param breakable Whether the egg will break.
      * @return {@code true} if pick up was successful.
      */
-    public boolean handlePickup(@NotNull Player player, @NotNull Location location, boolean fake, boolean breakable) {
+    public boolean handlePickup(Player player, Location location, boolean fake, boolean breakable) {
         // Handle fake egg
         if (fake) {
             final Firework firework = player.getWorld().spawn(location, Firework.class, f -> {
@@ -303,7 +302,7 @@ public final class EggManager {
         return true;
     }
 
-    public void clearSpawnTimer(@NotNull UUID uuid) {
+    public void clearSpawnTimer(UUID uuid) {
         nextSpawns.remove(uuid);
     }
 
@@ -313,7 +312,7 @@ public final class EggManager {
      * @return Random Easter egg item.
      */
     @SuppressWarnings("UnstableApiUsage")
-    private @NotNull ItemStack createItemStack() {
+    private ItemStack createItemStack() {
         // Get random egg to spawn
         final ItemStack item = resourceManager.getRandomEgg();
         item.editPersistentDataContainer(container -> {
@@ -347,7 +346,7 @@ public final class EggManager {
      * @param falling   Whether the entity should fall.
      * @return Spawned entity.
      */
-    private Entity spawnEggEntity(@NotNull Location location, @NotNull ItemStack item, boolean fake, boolean breakable, boolean falling) {
+    private Entity spawnEggEntity(Location location, ItemStack item, boolean fake, boolean breakable, boolean falling) {
         final World world = location.getWorld();
 
         // Spawn egg in the world
@@ -566,7 +565,7 @@ public final class EggManager {
      * @param ignoreMinimum Ignore minimum amount.
      * @return Valid spawning location for the egg or {@code null} if none was found
      */
-    private @Nullable Location findSpawnLocation(@NotNull Location center, boolean ignoreMinimum) {
+    private @Nullable Location findSpawnLocation(Location center, boolean ignoreMinimum) {
         final World world = center.getWorld();
         final List<Location> locations = new ArrayList<>();
 

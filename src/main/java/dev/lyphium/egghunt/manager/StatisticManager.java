@@ -1,13 +1,12 @@
 package dev.lyphium.egghunt.manager;
 
-import com.mojang.authlib.GameProfile;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.minecraft.util.Tuple;
-import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +51,7 @@ public final class StatisticManager {
      */
     private boolean changed;
 
-    public StatisticManager(@NotNull JavaPlugin plugin) {
+    public StatisticManager(JavaPlugin plugin) {
         this.plugin = plugin;
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::saveStatistics, SAVE_PERIOD, SAVE_PERIOD);
@@ -61,11 +60,11 @@ public final class StatisticManager {
     /**
      * Add points to a player.
      *
-     * @param uuid UUID of the player for whom the points should be added
+     * @param uuid   UUID of the player for whom the points should be added
      * @param points Amount of points to add
      * @return New amount of points.
      */
-    public int addPoints(@NotNull UUID uuid, int points) {
+    public int addPoints(UUID uuid, int points) {
         lock.writeLock().lock();
 
         try {
@@ -95,7 +94,7 @@ public final class StatisticManager {
      * @param uuid UUID of the player from whom the statistics should be loaded
      * @return Statistic of the player.
      */
-    public @NotNull Tuple<Integer, Integer> getStatistic(@NotNull UUID uuid) {
+    public Tuple<Integer, Integer> getStatistic(UUID uuid) {
         lock.readLock().lock();
 
         try {
@@ -134,7 +133,7 @@ public final class StatisticManager {
      * @param count Amount of players to query
      * @return List of top players.
      */
-    public @NotNull List<Tuple<String, Integer>> getLeaderboard(int count) {
+    public List<Tuple<String, Integer>> getLeaderboard(int count) {
         lock.readLock().lock();
 
         final List<CompletableFuture<Tuple<String, Integer>>> futures;
@@ -218,16 +217,17 @@ public final class StatisticManager {
      * @param uuid UUID of player.
      * @return Optional name of the player.
      */
-    private static @NotNull CompletableFuture<Optional<String>> getName(@NotNull UUID uuid) {
+    public static CompletableFuture<Optional<String>> getName(UUID uuid) {
         final Player player = Bukkit.getPlayer(uuid);
-
         if (player != null)
             return CompletableFuture.completedFuture(Optional.of(player.getName()));
 
-        try {
-            return SkullBlockEntity.fetchGameProfile(uuid, null).thenApply(g -> g.map(GameProfile::getName));
-        } catch (Exception ex) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
+        return getGameProfile(uuid).thenApply(g -> g.map(PlayerProfile::getName));
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static CompletableFuture<Optional<PlayerProfile>> getGameProfile(UUID uuid) {
+        return ResolvableProfile.resolvableProfile().uuid(uuid).build().resolve().thenApply(p -> p.isComplete() ? Optional.of(p) : Optional.empty());
+    }
+
 }

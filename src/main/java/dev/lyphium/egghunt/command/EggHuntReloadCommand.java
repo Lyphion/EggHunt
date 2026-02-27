@@ -13,11 +13,10 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntReloadCommand implements SubCommand {
 
     private final JavaPlugin plugin;
@@ -32,9 +31,9 @@ public final class EggHuntReloadCommand implements SubCommand {
     private final String name = "reload";
 
     public EggHuntReloadCommand(
-            @NotNull JavaPlugin plugin,
-            @NotNull ResourceManager resourceManager,
-            @NotNull EggManager eggManager
+            JavaPlugin plugin,
+            ResourceManager resourceManager,
+            EggManager eggManager
     ) {
         this.plugin = plugin;
         this.resourceManager = resourceManager;

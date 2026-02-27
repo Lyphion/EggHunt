@@ -15,11 +15,10 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntFakeCommand implements SubCommand {
 
     private final EggManager eggManager;
@@ -30,7 +29,7 @@ public final class EggHuntFakeCommand implements SubCommand {
     @Getter
     private final String name = "fake";
 
-    public EggHuntFakeCommand(@NotNull EggManager eggManager) {
+    public EggHuntFakeCommand(EggManager eggManager) {
         this.eggManager = eggManager;
     }
 

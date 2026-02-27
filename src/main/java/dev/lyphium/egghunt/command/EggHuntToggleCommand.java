@@ -17,12 +17,11 @@ import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.minimessage.translation.Argument;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntToggleCommand implements SubCommand {
 
     private final EggManager eggManager;
@@ -33,7 +32,7 @@ public final class EggHuntToggleCommand implements SubCommand {
     @Getter
     private final String name = "toggle";
 
-    public EggHuntToggleCommand(@NotNull EggManager eggManager) {
+    public EggHuntToggleCommand(EggManager eggManager) {
         this.eggManager = eggManager;
     }
 

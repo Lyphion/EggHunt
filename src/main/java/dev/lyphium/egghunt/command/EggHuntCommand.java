@@ -10,12 +10,10 @@ import io.papermc.paper.command.brigadier.Commands;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Main command for managing the plugin.
  */
-@SuppressWarnings("UnstableApiUsage")
 public final class EggHuntCommand {
 
     public static final String DESCRIPTION = "Central command for egg hunt";
@@ -27,10 +25,10 @@ public final class EggHuntCommand {
     private final SubCommand[] subCommands;
 
     public EggHuntCommand(
-            @NotNull JavaPlugin plugin,
-            @NotNull ResourceManager resourceManager,
-            @NotNull EggManager eggManager,
-            @NotNull StatisticManager statisticManager
+            JavaPlugin plugin,
+            ResourceManager resourceManager,
+            EggManager eggManager,
+            StatisticManager statisticManager
     ) {
         subCommands = new SubCommand[]{
                 new EggHuntDropsCommand(resourceManager),

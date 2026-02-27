@@ -20,7 +20,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -37,7 +36,7 @@ public final class DropsInventory implements InventoryHolder {
 
     private int page;
 
-    public DropsInventory(@NotNull ResourceManager resourceManager, @NotNull Locale locale) {
+    public DropsInventory(ResourceManager resourceManager, Locale locale) {
         this.resourceManager = resourceManager;
         this.locale = locale;
         this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("egghunt.inventory.drops.title"));
@@ -103,7 +102,7 @@ public final class DropsInventory implements InventoryHolder {
 
                 final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
                 lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.probability",
-                                Argument.numeric("probability", probability))
+                                Argument.string("probability", probability))
                         .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 lore.add(Component.empty());
@@ -142,7 +141,7 @@ public final class DropsInventory implements InventoryHolder {
 
                 final String probability = String.format(Locale.ENGLISH, "%.3f", 100.0 * drop.getWeight() / resourceManager.getTotalWeight());
                 lore.add(GlobalTranslator.render(Component.translatable("egghunt.inventory.drops.probability",
-                                Argument.numeric("probability", probability))
+                                Argument.string("probability", probability))
                         .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE), locale));
 
                 lore.add(Component.empty());
@@ -225,7 +224,7 @@ public final class DropsInventory implements InventoryHolder {
      *
      * @param item Item to clean up
      */
-    private void cleanupItem(@NotNull ItemStack item) {
+    private void cleanupItem(ItemStack item) {
         item.editPersistentDataContainer(c -> c.remove(NamespacedKeyConstants.DROP_ID_KEY));
 
         final List<Component> lore = new ArrayList<>(Objects.requireNonNull(item.getData(DataComponentTypes.LORE)).lines());

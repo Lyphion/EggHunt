@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.UUID;
 public final class EasterEggDrop {
 
     /**
-     * Id of the drop, used internally for removal.
+     * ID of the drop, used internally for removal.
      */
     private final UUID uuid = UUID.randomUUID();
 
@@ -53,7 +52,7 @@ public final class EasterEggDrop {
      * @param maximumAmount The maximum amount of the item
      * @param weight        Weight of this drop, compared to others
      */
-    public EasterEggDrop(@NotNull ItemStack itemDrop, int minimumAmount, int maximumAmount, int weight) {
+    public EasterEggDrop(ItemStack itemDrop, int minimumAmount, int maximumAmount, int weight) {
         this.itemDrop = itemDrop;
         this.minimumAmount = minimumAmount;
         this.maximumAmount = maximumAmount;
@@ -67,7 +66,7 @@ public final class EasterEggDrop {
      * @param commandDrop Command to be executed by the console
      * @param weight      Weight of this drop, compared to others
      */
-    public EasterEggDrop(@NotNull String commandDrop, int weight) {
+    public EasterEggDrop(String commandDrop, int weight) {
         this.itemDrop = null;
         this.minimumAmount = this.maximumAmount = 0;
         this.weight = Math.max(1, weight);
@@ -81,7 +80,7 @@ public final class EasterEggDrop {
      * @param player  Player targeting the command
      * @return Formated command.
      */
-    public static @NotNull String getFormatedCommand(@NotNull String command, @NotNull Player player) {
+    public static String getFormatedCommand(String command, Player player) {
         // Fast-forward if no placeholder has to be replaced
         if (!command.contains("@"))
             return command;

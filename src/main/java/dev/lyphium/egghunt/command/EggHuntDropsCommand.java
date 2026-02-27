@@ -21,9 +21,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntDropsCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
@@ -34,7 +33,7 @@ public final class EggHuntDropsCommand implements SubCommand {
     @Getter
     private final String name = "drops";
 
-    public EggHuntDropsCommand(@NotNull ResourceManager resourceManager) {
+    public EggHuntDropsCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 

@@ -5,7 +5,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 
 import javax.annotation.Nullable;
 
-@SuppressWarnings("UnstableApiUsage")
 public interface SubCommand {
 
     String getName();

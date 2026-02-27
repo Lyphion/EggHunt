@@ -16,11 +16,10 @@ import org.bukkit.Particle;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-@SuppressWarnings({"UnstableApiUsage", "SameReturnValue"})
+@SuppressWarnings("SameReturnValue")
 public final class EggHuntFindCommand implements SubCommand {
 
     private final ResourceManager resourceManager;
@@ -31,7 +30,7 @@ public final class EggHuntFindCommand implements SubCommand {
     @Getter
     private final String name = "find";
 
-    public EggHuntFindCommand(@NotNull ResourceManager resourceManager) {
+    public EggHuntFindCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 
@@ -70,8 +69,8 @@ public final class EggHuntFindCommand implements SubCommand {
         final Component msg;
         switch (amount) {
             case 0 -> msg = Component.translatable("egghunt.commands.find.found.zero");
-            case 1 -> msg = Component.translatable("egghunt.commands.find.found.one", Argument.numeric("amount", amount));
-            default -> msg = Component.translatable("egghunt.commands.find.found.multiple", Argument.numeric("amount", amount));
+            case 1 -> msg = Component.translatable("egghunt.commands.find.found.one");
+            default -> msg = Component.translatable("egghunt.commands.find.found.multiple", Argument.numeric("count", amount));
         }
 
         executor.sendMessage(TextConstants.PREFIX.append(msg));

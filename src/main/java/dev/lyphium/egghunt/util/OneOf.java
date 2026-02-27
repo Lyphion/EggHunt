@@ -1,7 +1,6 @@
 package dev.lyphium.egghunt.util;
 
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
@@ -17,11 +16,11 @@ public final class OneOf<A, B> {
         this.second = second;
     }
 
-    public static <A, B> OneOf<A, B> ofFirst(@NotNull A first) {
+    public static <A, B> OneOf<A, B> ofFirst(A first) {
         return new OneOf<>(first, null);
     }
 
-    public static <A, B> OneOf<A, B> ofSecond(@NotNull B second) {
+    public static <A, B> OneOf<A, B> ofSecond(B second) {
         return new OneOf<>(null, second);
     }
 }

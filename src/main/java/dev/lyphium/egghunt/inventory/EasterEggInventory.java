@@ -16,7 +16,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public final class EasterEggInventory implements InventoryHolder {
 
     private int page;
 
-    public EasterEggInventory(@NotNull ResourceManager resourceManager, @NotNull Locale locale) {
+    public EasterEggInventory(ResourceManager resourceManager, Locale locale) {
         this.resourceManager = resourceManager;
         this.locale = locale;
         this.inventory = Bukkit.createInventory(this, PAGE_SIZE + 9, Component.translatable("egghunt.inventory.eggs.title"));
@@ -135,7 +134,7 @@ public final class EasterEggInventory implements InventoryHolder {
      *
      * @param item Item to be added
      */
-    public void addEgg(@NotNull ItemStack item) {
+    public void addEgg(ItemStack item) {
         item = item.asOne();
 
         item.editPersistentDataContainer(container -> {

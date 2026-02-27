@@ -1,7 +1,6 @@
 package dev.lyphium.egghunt.data;
 
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 
 @Getter
 public enum EntityMode {
@@ -11,11 +10,11 @@ public enum EntityMode {
 
     private final String name;
 
-    EntityMode(@NotNull String name) {
+    EntityMode(String name) {
         this.name = name;
     }
 
-    public static EntityMode fromName(@NotNull String name) {
+    public static EntityMode fromName(String name) {
         for (final EntityMode e : EntityMode.values()) {
             if (e.name.equalsIgnoreCase(name)) {
                 return e;

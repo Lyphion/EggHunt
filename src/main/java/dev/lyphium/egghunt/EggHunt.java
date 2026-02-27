@@ -53,7 +53,6 @@ public final class EggHunt extends JavaPlugin {
         getLogger().info("Plugin deactivated");
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private void registerCommands() {
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             final Commands registrar = commands.registrar();
