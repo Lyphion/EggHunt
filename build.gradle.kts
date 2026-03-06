@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.lyphium"
-version = "1.5.0"
+version = "1.5.1"
 description = "Simple Easter egg hunt plugin"
 
 repositories {
@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.21.10-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.12.2")
 
     compileOnly("org.projectlombok:lombok:1.18.42")
@@ -47,7 +47,7 @@ tasks {
 paperPluginYaml {
     main = "dev.lyphium.egghunt.EggHunt"
     load = BukkitPluginYaml.PluginLoadOrder.POSTWORLD
-    apiVersion = "1.21.10"
+    apiVersion = "1.21.11"
     author = "Lyphion"
     website = "https://github.com/Lyphion/EggHunt"
     dependencies.server.register("PlaceholderAPI") {
@@ -58,8 +58,7 @@ paperPluginYaml {
         register("egghunt.admin") {
             description = "Admin permission"
             default = Permission.Default.OP
-            children("egghunt.configure", "egghunt.find", "egghunt.leaderboard",
-                "egghunt.spawn", "egghunt.toggle")
+            children("egghunt.configure", "egghunt.find", "egghunt.leaderboard", "egghunt.spawn", "egghunt.toggle")
         }
         register("egghunt.configure") {
             description = "Permission to configure eggs and drops"

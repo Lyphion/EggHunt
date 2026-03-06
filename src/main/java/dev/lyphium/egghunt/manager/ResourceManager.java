@@ -8,7 +8,6 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.minimessage.translation.MiniMessageTranslationStore;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -322,18 +321,16 @@ public final class ResourceManager {
         translationStore = MiniMessageTranslationStore.create(Key.key("egghunt"));
         translationStore.defaultLocale(languageOverride.equals("german") ? Locale.GERMAN : Locale.ENGLISH);
 
-        final ResourceBundle.Control control = UTF8ResourceBundleControl.utf8ResourceBundleControl();
-
         if (languageOverride.equals("german")) {
-            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, control);
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN);
             translationStore.registerAll(Locale.GERMAN, bundle, true);
         } else if (languageOverride.equals("english")) {
-            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, control);
+            final ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH);
             translationStore.registerAll(Locale.ENGLISH, bundle, true);
         } else {
-            ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH, control);
+            ResourceBundle bundle = ResourceBundle.getBundle("egghunt", Locale.ENGLISH);
             translationStore.registerAll(Locale.ENGLISH, bundle, true);
-            bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN, control);
+            bundle = ResourceBundle.getBundle("egghunt", Locale.GERMAN);
             translationStore.registerAll(Locale.GERMAN, bundle, true);
         }
 
