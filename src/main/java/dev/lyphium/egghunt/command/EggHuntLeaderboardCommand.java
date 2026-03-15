@@ -7,7 +7,6 @@ import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.manager.StatisticManager;
 import dev.lyphium.egghunt.util.ColorConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lombok.Getter;
@@ -25,16 +24,19 @@ import java.util.List;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntLeaderboardCommand implements SubCommand {
 
-    private final JavaPlugin plugin;
-
-    private final ResourceManager resourceManager;
-    private final StatisticManager statisticManager;
+    @Getter
+    private final String name = "leaderboard";
 
     @Getter
     private final String minimumPermission = PermissionConstants.LEADERBOARD;
 
     @Getter
-    private final String name = "leaderboard";
+    private final Component description = Component.translatable("egghunt.command.egghunt.leaderboard.description");
+
+    private final JavaPlugin plugin;
+
+    private final ResourceManager resourceManager;
+    private final StatisticManager statisticManager;
 
     public EggHuntLeaderboardCommand(
             JavaPlugin plugin,
@@ -61,7 +63,7 @@ public final class EggHuntLeaderboardCommand implements SubCommand {
             // Get leaderboard
             final List<Tuple<String, Integer>> leaderboard = statisticManager.getLeaderboard(resourceManager.getLeaderboardSize());
 
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.leaderboard.menu")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.leaderboard.menu")));
 
             // Send top players
             for (int i = 0; i < leaderboard.size(); i++) {

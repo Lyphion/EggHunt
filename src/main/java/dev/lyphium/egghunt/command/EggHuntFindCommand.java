@@ -6,7 +6,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lombok.Getter;
@@ -25,10 +24,13 @@ public final class EggHuntFindCommand implements SubCommand {
     private final ResourceManager resourceManager;
 
     @Getter
+    private final String name = "find";
+
+    @Getter
     private final String minimumPermission = PermissionConstants.FIND;
 
     @Getter
-    private final String name = "find";
+    private final Component description = Component.translatable("egghunt.command.egghunt.find.description");
 
     public EggHuntFindCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -45,7 +47,7 @@ public final class EggHuntFindCommand implements SubCommand {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         if (!(executor instanceof Player player)) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.find.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -68,12 +70,12 @@ public final class EggHuntFindCommand implements SubCommand {
         int amount = items.size();
         final Component msg;
         switch (amount) {
-            case 0 -> msg = Component.translatable("egghunt.commands.find.found.zero");
-            case 1 -> msg = Component.translatable("egghunt.commands.find.found.one");
-            default -> msg = Component.translatable("egghunt.commands.find.found.multiple", Argument.numeric("count", amount));
+            case 0 -> msg = Component.translatable("egghunt.command.egghunt.find.found.zero");
+            case 1 -> msg = Component.translatable("egghunt.command.egghunt.find.found.one");
+            default -> msg = Component.translatable("egghunt.command.egghunt.find.found.multiple", Argument.numeric("count", amount));
         }
 
-        executor.sendMessage(TextConstants.PREFIX.append(msg));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(msg));
 
         return Command.SINGLE_SUCCESS;
     }

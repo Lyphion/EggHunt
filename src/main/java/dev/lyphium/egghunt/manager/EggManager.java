@@ -1,13 +1,11 @@
 package dev.lyphium.egghunt.manager;
 
 import dev.lyphium.egghunt.util.NamespacedKeyConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import io.papermc.paper.persistence.PersistentDataContainerView;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.translation.Argument;
@@ -254,7 +252,7 @@ public final class EggManager {
         if (count % resourceManager.getMilestone() == 0) {
             shootFirework = true;
 
-            final TextComponent message = TextConstants.PREFIX.append(Component.translatable("egghunt.announcement.leaderboard.factor",
+            final Component message = Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.announcement.leaderboard.factor",
                     Argument.component("name", player.displayName()),
                     Argument.numeric("count", count)));
 
@@ -267,7 +265,7 @@ public final class EggManager {
         if (newRank == 1 && oldRank != newRank) {
             shootFirework = true;
 
-            final TextComponent message = TextConstants.PREFIX.append(Component.translatable("egghunt.announcement.leaderboard.change",
+            final Component message = Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.announcement.leaderboard.change",
                     Argument.component("name", player.displayName()),
                     Argument.numeric("count", count)));
 

@@ -10,7 +10,6 @@ import dev.lyphium.egghunt.data.EasterEggDrop;
 import dev.lyphium.egghunt.inventory.DropsInventory;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -25,13 +24,16 @@ import org.bukkit.inventory.ItemStack;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntDropsCommand implements SubCommand {
 
-    private final ResourceManager resourceManager;
+    @Getter
+    private final String name = "drops";
 
     @Getter
     private final String minimumPermission = PermissionConstants.CONFIGURE;
 
     @Getter
-    private final String name = "drops";
+    private final Component description = Component.translatable("egghunt.command.egghunt.drops.description");
+
+    private final ResourceManager resourceManager;
 
     public EggHuntDropsCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -67,7 +69,7 @@ public final class EggHuntDropsCommand implements SubCommand {
 
         if (!(executor instanceof Player player)) {
             if (executor != null)
-                executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+                executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -79,7 +81,7 @@ public final class EggHuntDropsCommand implements SubCommand {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         if (!(executor instanceof Player player)) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -87,21 +89,21 @@ public final class EggHuntDropsCommand implements SubCommand {
         final int weight = IntegerArgumentType.getInteger(ctx, "weight");
 
         if (!amount.hasLowerBound() || !amount.hasUpperBound() || amount.lowerEndpoint() < 1) {
-            player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_range")));
+            player.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.invalid_range")));
             return Command.SINGLE_SUCCESS;
         }
 
         // Check if item in hand is valid
         final ItemStack item = player.getInventory().getItemInMainHand().asOne();
         if (item.isEmpty()) {
-            player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_item")));
+            player.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.invalid_item")));
             return Command.SINGLE_SUCCESS;
         }
 
         final EasterEggDrop drop = new EasterEggDrop(item, amount.lowerEndpoint(), amount.upperEndpoint(), weight);
         resourceManager.addDrop(drop);
 
-        player.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+        player.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.success")));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -112,20 +114,20 @@ public final class EggHuntDropsCommand implements SubCommand {
         final int weight = IntegerArgumentType.getInteger(ctx, "weight");
 
         if (!amount.hasLowerBound() || !amount.hasUpperBound() || amount.lowerEndpoint() < 1) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_range")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.invalid_range")));
             return Command.SINGLE_SUCCESS;
         }
 
         final ItemStack item = ctx.getArgument("item", ItemStack.class);
         if (item.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.invalid_item")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.invalid_item")));
             return Command.SINGLE_SUCCESS;
         }
 
         final EasterEggDrop drop = new EasterEggDrop(item, amount.lowerEndpoint(), amount.upperEndpoint(), weight);
         resourceManager.addDrop(drop);
 
-        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.success")));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -139,7 +141,7 @@ public final class EggHuntDropsCommand implements SubCommand {
         final EasterEggDrop drop = new EasterEggDrop(command, weight);
         resourceManager.addDrop(drop);
 
-        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.drops.success")));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.drops.success")));
         return Command.SINGLE_SUCCESS;
     }
 }

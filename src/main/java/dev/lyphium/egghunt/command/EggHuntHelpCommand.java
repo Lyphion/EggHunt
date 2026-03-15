@@ -4,7 +4,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.util.ColorConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lombok.Getter;
@@ -22,6 +21,9 @@ public final class EggHuntHelpCommand implements SubCommand {
     @Getter
     private final String name = "help";
 
+    @Getter
+    private final Component description = Component.translatable("egghunt.command.egghunt.help.description");
+
     public EggHuntHelpCommand(EggHuntCommand parent) {
         this.parent = parent;
     }
@@ -35,7 +37,7 @@ public final class EggHuntHelpCommand implements SubCommand {
     private int handle(CommandContext<CommandSourceStack> ctx) {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
-        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.help.menu")));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.help.menu")));
 
         // Format all sub commands, and filter with missing permission
         for (final SubCommand command : parent.getSubCommands()) {
@@ -46,7 +48,7 @@ public final class EggHuntHelpCommand implements SubCommand {
                     .content("» ").color(NamedTextColor.GRAY)
                     .append(Component.text(command.getName(), ColorConstants.HIGHLIGHT).clickEvent(ClickEvent.suggestCommand("/egghunt " + command.getName())))
                     .append(Component.text(": ", NamedTextColor.GRAY))
-                    .append(Component.translatable("egghunt.commands." + command.getName() + ".description", NamedTextColor.WHITE));
+                    .append(command.getDescription().color(NamedTextColor.WHITE));
 
             executor.sendMessage(builder.build());
         }

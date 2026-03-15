@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -21,13 +20,16 @@ import java.util.List;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntFakeCommand implements SubCommand {
 
-    private final EggManager eggManager;
+    @Getter
+    private final String name = "fake";
 
     @Getter
     private final String minimumPermission = PermissionConstants.SPAWN;
 
     @Getter
-    private final String name = "fake";
+    private final Component description = Component.translatable("egghunt.command.egghunt.fake.description");
+
+    private final EggManager eggManager;
 
     public EggHuntFakeCommand(EggManager eggManager) {
         this.eggManager = eggManager;
@@ -47,15 +49,15 @@ public final class EggHuntFakeCommand implements SubCommand {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         if (!(executor instanceof Player player)) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 
         final boolean success = eggManager.spawn(player.getLocation(), true, true);
         if (success) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.fake.success")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.success")));
         } else {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.fake.failure")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.failure")));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -68,12 +70,12 @@ public final class EggHuntFakeCommand implements SubCommand {
         try {
             targets = ctx.getArgument("player", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource());
         } catch (CommandSyntaxException e) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
         if (targets.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -83,9 +85,9 @@ public final class EggHuntFakeCommand implements SubCommand {
         }
 
         if (success) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.fake.success")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.success")));
         } else {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.fake.failure")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.fake.failure")));
         }
 
         return Command.SINGLE_SUCCESS;

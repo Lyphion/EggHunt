@@ -6,7 +6,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.inventory.EasterEggInventory;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lombok.Getter;
@@ -17,13 +16,16 @@ import org.bukkit.entity.Player;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntModelsCommand implements SubCommand {
 
-    private final ResourceManager resourceManager;
+    @Getter
+    private final String name = "models";
 
     @Getter
     private final String minimumPermission = PermissionConstants.CONFIGURE;
 
     @Getter
-    private final String name = "models";
+    private final Component description = Component.translatable("egghunt.command.egghunt.models.description");
+
+    private final ResourceManager resourceManager;
 
     public EggHuntModelsCommand(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -40,7 +42,7 @@ public final class EggHuntModelsCommand implements SubCommand {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         if (!(executor instanceof Player player)) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.models.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 

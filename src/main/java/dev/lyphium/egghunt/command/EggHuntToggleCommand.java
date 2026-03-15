@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -24,13 +23,16 @@ import java.util.List;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntToggleCommand implements SubCommand {
 
-    private final EggManager eggManager;
+    @Getter
+    private final String name = "toggle";
 
     @Getter
     private final String minimumPermission = PermissionConstants.TOGGLE;
 
     @Getter
-    private final String name = "toggle";
+    private final Component description = Component.translatable("egghunt.command.egghunt.toggle.description");
+
+    private final EggManager eggManager;
 
     public EggHuntToggleCommand(EggManager eggManager) {
         this.eggManager = eggManager;
@@ -51,9 +53,9 @@ public final class EggHuntToggleCommand implements SubCommand {
         eggManager.setActive(!eggManager.isActive());
 
         if (eggManager.isActive()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.toggle.enabled")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.enabled")));
         } else {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.toggle.disabled")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.disabled")));
         }
 
         return Command.SINGLE_SUCCESS;
@@ -66,12 +68,12 @@ public final class EggHuntToggleCommand implements SubCommand {
         try {
             targets = ctx.getArgument("player", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource());
         } catch (CommandSyntaxException e) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
         if (targets.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -89,12 +91,12 @@ public final class EggHuntToggleCommand implements SubCommand {
         }
 
         if (!removed.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.toggle.removed",
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.removed",
                     Argument.component("name", Component.join(JoinConfiguration.commas(true), removed)))));
         }
 
         if (!added.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.toggle.added",
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.toggle.added",
                     Argument.component("name", Component.join(JoinConfiguration.commas(true), added)))));
         }
 

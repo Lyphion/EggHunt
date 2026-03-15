@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -21,13 +20,16 @@ import java.util.List;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntRainCommand implements SubCommand {
 
-    private final EggManager eggManager;
+    @Getter
+    private final String name = "rain";
 
     @Getter
     private final String minimumPermission = PermissionConstants.SPAWN;
 
     @Getter
-    private final String name = "rain";
+    private final Component description = Component.translatable("egghunt.command.egghunt.rain.description");
+
+    private final EggManager eggManager;
 
     public EggHuntRainCommand(EggManager eggManager) {
         this.eggManager = eggManager;
@@ -47,12 +49,12 @@ public final class EggHuntRainCommand implements SubCommand {
         final CommandSender executor = ctx.getSource().getExecutor() == null ? ctx.getSource().getSender() : ctx.getSource().getExecutor();
 
         if (!(executor instanceof Player player)) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.only_player")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.rain.only_player")));
             return Command.SINGLE_SUCCESS;
         }
 
         eggManager.rain(player.getLocation());
-        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.rain.success")));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.rain.success")));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -64,12 +66,12 @@ public final class EggHuntRainCommand implements SubCommand {
         try {
             targets = ctx.getArgument("player", PlayerSelectorArgumentResolver.class).resolve(ctx.getSource());
         } catch (CommandSyntaxException e) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.rain.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
         if (targets.isEmpty()) {
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.error.unknown_user")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.rain.unknown_user")));
             return Command.SINGLE_SUCCESS;
         }
 
@@ -77,7 +79,7 @@ public final class EggHuntRainCommand implements SubCommand {
             eggManager.rain(target.getLocation());
         }
 
-        executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.rain.success")));
+        executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.rain.success")));
 
         return Command.SINGLE_SUCCESS;
     }

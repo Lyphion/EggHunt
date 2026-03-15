@@ -6,7 +6,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.lyphium.egghunt.manager.EggManager;
 import dev.lyphium.egghunt.manager.ResourceManager;
 import dev.lyphium.egghunt.util.PermissionConstants;
-import dev.lyphium.egghunt.util.TextConstants;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lombok.Getter;
@@ -19,16 +18,19 @@ import java.util.logging.Level;
 @SuppressWarnings("SameReturnValue")
 public final class EggHuntReloadCommand implements SubCommand {
 
-    private final JavaPlugin plugin;
-
-    private final ResourceManager resourceManager;
-    private final EggManager eggManager;
+    @Getter
+    private final String name = "reload";
 
     @Getter
     private final String minimumPermission = PermissionConstants.CONFIGURE;
 
     @Getter
-    private final String name = "reload";
+    private final Component description = Component.translatable("egghunt.command.egghunt.reload.description");
+
+    private final JavaPlugin plugin;
+
+    private final ResourceManager resourceManager;
+    private final EggManager eggManager;
 
     public EggHuntReloadCommand(
             JavaPlugin plugin,
@@ -55,10 +57,10 @@ public final class EggHuntReloadCommand implements SubCommand {
             resourceManager.loadResources();
             eggManager.setActive(true);
 
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.reload.success")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.reload.success")));
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to reload configurations", e);
-            executor.sendMessage(TextConstants.PREFIX.append(Component.translatable("egghunt.commands.reload.failure")));
+            executor.sendMessage(Component.translatable("egghunt.chat.prefix").append(Component.translatable("egghunt.command.egghunt.reload.failure")));
         }
 
         return Command.SINGLE_SUCCESS;
