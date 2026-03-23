@@ -254,10 +254,8 @@ public final class ResourceManager {
 
         // Load Items for eggs
         eggs.clear();
-        for (final Object o : eggsConfig.getList("Eggs", List.of())) {
-            if (o instanceof ItemStack item) {
-                eggs.add(item.asOne());
-            }
+        for (final String o : eggsConfig.getStringList("Eggs")) {
+            eggs.add(Bukkit.getItemFactory().createItemStack(o));
         }
 
         // Load Item drops from eggs
@@ -344,7 +342,9 @@ public final class ResourceManager {
         final FileConfiguration eggsConfig = new YamlConfiguration();
         final FileConfiguration dropsConfig = new YamlConfiguration();
 
-        eggsConfig.set("Eggs", eggs);
+        eggsConfig.set("Eggs", eggs.stream()
+                .map(e -> e.getType().key() + e.getItemMeta().getAsComponentString())
+                .toList());
 
         final List<Map<String, Object>> itemDrops = new ArrayList<>();
         final List<Map<String, Object>> commandDrops = new ArrayList<>();
