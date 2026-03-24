@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.lyphium"
-version = "1.5.3"
+version = "1.5.4"
 description = "Simple Easter egg hunt plugin"
 
 repositories {

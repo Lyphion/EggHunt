@@ -13,6 +13,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockType;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.EquipmentSlot;
@@ -574,10 +575,10 @@ public final class EggManager {
 
         // Search every clock around center
         for (int dx = -maxRadius; dx <= maxRadius; dx++) {
+            final int x = cx + dx;
             for (int dy = -maxRadius; dy <= maxRadius; dy++) {
+                final int y = cy + dy;
                 for (int dz = -maxRadius; dz <= maxRadius; dz++) {
-                    final int x = cx + dx;
-                    final int y = cy + dy;
                     final int z = cz + dz;
 
                     // Check if block is in range
@@ -586,7 +587,8 @@ public final class EggManager {
 
                     // Check if block is valid
                     final Block block = world.getBlockAt(x, y, z);
-                    if (!resourceManager.checkIfValidBlock(block.getType()))
+                    final BlockType type = block.getType().asBlockType();
+                    if (type == null || !resourceManager.checkIfValidBlock(type))
                         continue;
 
                     // Add block to valid locations

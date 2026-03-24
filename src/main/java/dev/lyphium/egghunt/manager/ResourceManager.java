@@ -11,6 +11,8 @@ import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.block.BlockType;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 
 @Getter
 public final class ResourceManager {
@@ -35,16 +38,13 @@ public final class ResourceManager {
     @Getter(AccessLevel.NONE)
     private final Random random = new Random(System.currentTimeMillis());
 
-    private final Set<Material> validBlocks = new HashSet<>();
+    private final Set<BlockType> validBlocks = new HashSet<>();
     private final List<ItemStack> eggs = new ArrayList<>();
 
     private int totalWeight;
     private final List<EasterEggDrop> drops = new ArrayList<>();
 
-    private Sound spawnSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_PLOP, Sound.Source.NEUTRAL, 1.0f, 1.0f),
-            openSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_CRACK, Sound.Source.NEUTRAL, 1.0f, 1.0f),
-            leaderboardSound = Sound.sound(org.bukkit.Sound.ENTITY_FIREWORK_ROCKET_TWINKLE_FAR, Sound.Source.NEUTRAL, 1.0f, 1.0f),
-            breakSound = Sound.sound(org.bukkit.Sound.ENTITY_TURTLE_EGG_BREAK, Sound.Source.NEUTRAL, 1.0f, 1.0f);
+    private Sound spawnSound, openSound, leaderboardSound, breakSound;
 
     private int minimumRange, maximumRange;
     private int minimumDuration, maximumDuration;
@@ -67,6 +67,11 @@ public final class ResourceManager {
 
     public ResourceManager(JavaPlugin plugin) {
         this.plugin = plugin;
+
+        spawnSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_PLOP, Sound.Source.NEUTRAL, 1.0f, 1.0f);
+        openSound = Sound.sound(org.bukkit.Sound.BLOCK_SNIFFER_EGG_CRACK, Sound.Source.NEUTRAL, 1.0f, 1.0f);
+        leaderboardSound = Sound.sound(org.bukkit.Sound.ENTITY_FIREWORK_ROCKET_TWINKLE_FAR, Sound.Source.NEUTRAL, 1.0f, 1.0f);
+        breakSound = Sound.sound(org.bukkit.Sound.ENTITY_TURTLE_EGG_BREAK, Sound.Source.NEUTRAL, 1.0f, 1.0f);
     }
 
     /**
@@ -104,13 +109,13 @@ public final class ResourceManager {
     }
 
     /**
-     * Check if the provided material (block) is a valid spawn location.
+     * Check if the provided type (block) is a valid spawn location.
      *
-     * @param material Material (block) to check
-     * @return {@code true} if material is valid.
+     * @param type Material (block) to check
+     * @return {@code true} if type is valid.
      */
-    public boolean checkIfValidBlock(Material material) {
-        return validBlocks.contains(material);
+    public boolean checkIfValidBlock(BlockType type) {
+        return validBlocks.contains(type);
     }
 
     /**
@@ -245,17 +250,23 @@ public final class ResourceManager {
 
         // Load valid blocks for eggs
         validBlocks.clear();
-        for (final String materials : Objects.requireNonNull(config.getStringList("Locations"))) {
-            final Material material = Material.matchMaterial(materials);
-
-            if (material != null)
-                validBlocks.add(material);
+        for (final String material : Objects.requireNonNull(config.getStringList("Locations"))) {
+            final BlockType type = Registry.BLOCK.get(Objects.requireNonNull(NamespacedKey.fromString(material)));
+            if (type == null) {
+                plugin.getLogger().log(Level.WARNING, "Unknown block type " + material);
+            } else {
+                validBlocks.add(type);
+            }
         }
 
         // Load Items for eggs
         eggs.clear();
         for (final String o : eggsConfig.getStringList("Eggs")) {
-            eggs.add(Bukkit.getItemFactory().createItemStack(o));
+            try {
+                eggs.add(Bukkit.getItemFactory().createItemStack(o));
+            } catch (final Exception ex) {
+                plugin.getLogger().log(Level.WARNING, "Could not load egg " + o, ex);
+            }
         }
 
         // Load Item drops from eggs
@@ -264,14 +275,18 @@ public final class ResourceManager {
             if (!(o instanceof Map<?, ?> map))
                 continue;
 
-            final Object itemData = map.getOrDefault("Item", null);
-            final Object minimumData = map.containsKey("Minimum") ? map.get("Minimum") : 1;
-            final Object maximumData = map.containsKey("Maximum") ? map.get("Maximum") : 1;
-            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
+            final String item = map.get("Item") instanceof String s ? s : null;
+            if (item == null)
+                continue;
 
-            if (itemData instanceof String s && minimumData instanceof Integer minimum
-                && maximumData instanceof Integer maximum && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(Bukkit.getItemFactory().createItemStack(s), minimum, maximum, weight));
+            final int minimum = map.get("Minimum") instanceof Number n ? n.intValue() : 1;
+            final int maximum = map.get("Maximum") instanceof Number n ? n.intValue() : 1;
+            final int weight = map.get("Weight") instanceof Number n ? n.intValue() : 1;
+
+            try {
+                drops.add(new EasterEggDrop(Bukkit.getItemFactory().createItemStack(item), minimum, maximum, weight));
+            } catch (final Exception ex) {
+                plugin.getLogger().log(Level.WARNING, "Could not load drop " + o, ex);
             }
         }
 
@@ -280,12 +295,13 @@ public final class ResourceManager {
             if (!(o instanceof Map<?, ?> map))
                 continue;
 
-            final Object commandData = map.getOrDefault("Command", null);
-            final Object weightData = map.containsKey("Weight") ? map.get("Weight") : 1;
+            final String command = map.get("Command") instanceof String s ? s : null;
+            if (command == null)
+                continue;
 
-            if (commandData instanceof String command && weightData instanceof Integer weight) {
-                drops.add(new EasterEggDrop(command, weight));
-            }
+            final int weight = map.get("Weight") instanceof Number n ? n.intValue() : 1;
+
+            drops.add(new EasterEggDrop(command, weight));
         }
 
         // Sort drops by weight
